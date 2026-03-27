@@ -95,7 +95,11 @@ body {
 
 <body>
 
-<div class="header" id="month"></div>
+<div class="header">
+    <button onclick="prevMonth()">←</button>
+    <div id="month"></div>
+    <button onclick="nextMonth()">→</button>
+</div>
 
 <div class="calendar">
     <div class="weekdays">
@@ -114,10 +118,30 @@ body {
 let selectedDays = [];
 let current = new Date();
 
+const monthNames = [
+    "Январь","Февраль","Март","Апрель","Май","Июнь",
+    "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"
+];
+
+function prevMonth() {
+    current.setMonth(current.getMonth() - 1);
+    render();
+}
+
+function nextMonth() {
+    current.setMonth(current.getMonth() + 1);
+    render();
+}
+
+function getNextCycleStart() {
+    return new Date(lastStart.getTime() + cycleLength * 86400000);
+}
+
 // 👉 ТВОИ ДАННЫЕ (потом подключим к боту)
 const cycleLength = 28;
 const periodLength = 5;
 const lastStart = new Date("2026-03-13");
+
 
 // расчет овуляции
 function getOvulation(start) {
@@ -132,13 +156,14 @@ function isBetween(date, start, end) {
 function render() {
     const grid = document.getElementById("grid");
     const month = document.getElementById("month");
+    const nextCycle = getNextCycleStart();
 
     grid.innerHTML = "";
 
     const year = current.getFullYear();
     const m = current.getMonth();
 
-    month.innerText = `${year} - ${m + 1}`;
+    month.innerText = `${monthNames[m]} ${year}`;
 
     const firstDay = new Date(year, m, 1).getDay();
     const offset = firstDay === 0 ? 6 : firstDay - 1;
@@ -161,6 +186,9 @@ function render() {
         // today
         if (date.toDateString() === new Date().toDateString()) {
             div.classList.add("today");
+        }
+        if (date.toDateString() === nextCycle.toDateString()) {
+            div.style.border = "2px dashed #ff4d6d";
         }
 
         // менструация
@@ -200,6 +228,10 @@ function render() {
 function showInfo(date) {
     const status = document.getElementById("status");
     const info = document.getElementById("info");
+    const nextCycle = getNextCycleStart();
+    const diffToNext = Math.ceil((nextCycle - date) / 86400000);
+
+info.innerText += `\nДо следующего цикла: ${diffToNext} дн.`;
 
     const diff = Math.floor((date - lastStart) / 86400000) + 1;
 
