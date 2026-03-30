@@ -228,6 +228,11 @@
   </div>
 
   <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+    tg.ready();
+    tg.expand();
+}
     let selectedDays = [];
     let current = new Date();
     let modalDate = null;
@@ -499,15 +504,24 @@
     }
 
 function sendSave() {
-  const tg = window.Telegram.WebApp;
+  const tg = window.Telegram?.WebApp;
+
+  if (!tg) {
+    setSaveStatus("Открыто не в Telegram");
+    console.error("Telegram WebApp API недоступен");
+    return;
+  }
 
   try {
-    tg.sendData(JSON.stringify({
+    const payload = {
       type: "save_cycle",
       days: selectedDays,
       last_start: formatISO(lastStart)
-    }));
+    };
 
+    console.log("Отправляем в бот:", payload);
+
+    tg.sendData(JSON.stringify(payload));
     setSaveStatus("Отправлено в бот ✓");
 
     setTimeout(() => {
