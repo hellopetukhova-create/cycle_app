@@ -200,47 +200,85 @@
     }
 
     .view-switch {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 10px 10px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 10px 10px;
+    }
+
+    .view-btn {
+      border: none;
+      background: #f3f3f3;
+      color: #555;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .view-btn.active {
+      background: #111;
+      color: white;
+    }
+
+    .year-view {
+      background: white;
+      border-radius: 20px;
+      padding: 24px 16px;
+      margin: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .year-placeholder {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #777;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .year-view {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 10px;
 }
 
-.view-btn {
-  border: none;
-  background: #f3f3f3;
-  color: #555;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+    .year-month {
+      background: #fff;
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
 
-.view-btn.active {
-  background: #111;
-  color: white;
-}
+    .year-month-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 6px;
+    }
 
-.year-view {
-  background: white;
-  border-radius: 20px;
-  padding: 24px 16px;
-  margin: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
+    .year-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
 
-.year-placeholder {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  color: #777;
-}
+    .year-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #eee;
+    }
 
-.hidden {
-  display: none;
-}
+    .year-dot.period {
+      background: #ff5c8a;
+    }
   </style>
 </head>
 
@@ -373,17 +411,29 @@
       const monthBtn = document.getElementById("month-view-btn");
       const yearBtn = document.getElementById("year-view-btn");
 
-      if (mode === "month") {
-        calendar.classList.remove("hidden");
-        yearView.classList.add("hidden");
-        monthBtn.classList.add("active");
-        yearBtn.classList.remove("active");
-      } else {
-        calendar.classList.add("hidden");
-        yearView.classList.remove("hidden");
-        monthBtn.classList.remove("active");
-        yearBtn.classList.add("active");
+function setViewMode(mode) {
+  viewMode = mode;
+
+  const calendar = document.querySelector(".calendar");
+  const yearView = document.getElementById("year-view");
+  const monthBtn = document.getElementById("month-view-btn");
+  const yearBtn = document.getElementById("year-view-btn");
+
+  if (mode === "month") {
+      calendar.classList.remove("hidden");
+      yearView.classList.add("hidden");
+      monthBtn.classList.add("active");
+      yearBtn.classList.remove("active");
+     } 
+    else {
+      calendar.classList.add("hidden");
+      yearView.classList.remove("hidden");
+      monthBtn.classList.remove("active");
+      yearBtn.classList.add("active");
+
+      renderYear(); // 👈 ВАЖНО
       }
+    }
     }
 
     function setCycleStart() {
@@ -647,6 +697,52 @@
 
     render();
     setViewMode(viewMode);
+  
+  function renderYear() {
+  const yearView = document.getElementById("year-view");
+  yearView.innerHTML = "";
+
+  const year = current.getFullYear();
+
+  for (let m = 0; m < 12; m++) {
+    const monthBlock = document.createElement("div");
+    monthBlock.classList.add("year-month");
+
+    const title = document.createElement("div");
+    title.classList.add("year-month-title");
+    title.innerText = monthNames[m];
+
+    const grid = document.createElement("div");
+    grid.classList.add("year-grid");
+
+    const daysInMonth = new Date(year, m + 1, 0).getDate();
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, m, d);
+
+      const dot = document.createElement("div");
+      dot.classList.add("year-dot");
+
+      const diff = Math.floor(
+        (normalize(date) - normalize(lastStart)) / 86400000
+      );
+
+      if (diff >= 0) {
+        const cycleDay = (diff % cycleLength) + 1;
+
+        if (cycleDay <= periodLength) {
+          dot.classList.add("period");
+        }
+      }
+
+      grid.appendChild(dot);
+    }
+
+    monthBlock.appendChild(title);
+    monthBlock.appendChild(grid);
+    yearView.appendChild(monthBlock);
+  }
+}
   </script>
 </body>
 </html>
