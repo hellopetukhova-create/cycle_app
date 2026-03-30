@@ -60,7 +60,7 @@
     }
 
     .day:active {
-      transform: scale(0.98);
+  transform: scale(0.95);
     }
 
     .day-number {
@@ -157,6 +157,10 @@
       cursor: pointer;
     }
 
+    .save-btn:active {
+      transform: scale(0.97);
+    }
+
     .modal {
       position: fixed;
       inset: 0;
@@ -233,20 +237,20 @@
   gap: 12px;
 }
 
-.year-view:not(.hidden) {
-  display: grid;
-}
+    .year-view:not(.hidden) {
+      display: grid;
+    }
 
-.year-placeholder {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  color: #777;
-}
+    .year-placeholder {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #777;
+    }
 
-.hidden {
-  display: none !important;
-}
+    .hidden {
+      display: none !important;
+    }
 
     .year-month {
       background: #fff;
@@ -278,11 +282,27 @@
     .year-dot.period {
       background: #ff5c8a;
     }
+
+    .calendar {
+    animation: fadeIn 0.25s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   </style>
 </head>
 
 <body>
   <div class="header">
+    <button class="nav-btn" onclick="goToday()">●</button>
     <button class="nav-btn" onclick="prevMonth()">←</button>
     <div id="month"></div>
     <button class="nav-btn" onclick="nextMonth()">→</button>
@@ -348,6 +368,13 @@
       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
     ];
 
+    function goToday() {
+      const today = new Date();
+      current = new Date(today.getFullYear(), today.getMonth(), 1);
+      render();
+      showInfo(today);
+    }
+
     function normalize(date) {
       return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
@@ -373,7 +400,7 @@
         viewMode
       };
       localStorage.setItem("cycleAppState", JSON.stringify(state));
-      setSaveStatus("Локально сохранено ✓");
+      setSaveStatus("Отправлено в бот 💌");
     }
 
     function loadFromLocal() {
@@ -686,7 +713,7 @@ function setViewMode(mode) {
   } else {
     loadFromLocal();
   }
-
+    current = new Date(lastStart.getFullYear(), lastStart.getMonth(), 1);
     render();
     setViewMode(viewMode);
   
