@@ -50,8 +50,34 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #f5f5f5;
     cursor: pointer;
+    position: relative;
+}
+
+.day-number {
+    font-size: 12px;
+    color: #333;
+}
+
+.cycle-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    background: transparent; /* по умолчанию прозрачный */
+    transition: all 0.3s ease;
+}
+
+.cycle-dot.period {
+    background: #ff5c8a;
+}
+
+.cycle-dot.ovulation {
+    background: #3b2b8f;
+}
+
+.cycle-dot.fertile {
+    background: #ffd1dc;
 }
 
 .period {
