@@ -429,30 +429,30 @@
       document.getElementById("day-modal").classList.add("hidden");
     }
 
-function setViewMode(mode) {
-  viewMode = mode;
+    function setViewMode(mode) {
+      viewMode = mode;
 
-  const calendar = document.querySelector(".calendar");
-  const yearView = document.getElementById("year-view");
-  const monthBtn = document.getElementById("month-view-btn");
-  const yearBtn = document.getElementById("year-view-btn");
+    const calendar = document.querySelector(".calendar");
+    const yearView = document.getElementById("year-view");
+    const monthBtn = document.getElementById("month-view-btn");
+    const yearBtn = document.getElementById("year-view-btn");
 
-  if (mode === "month") {
-    calendar.classList.remove("hidden");
-    yearView.classList.add("hidden");
-    monthBtn.classList.add("active");
-    yearBtn.classList.remove("active");
-  } else {
-    calendar.classList.add("hidden");
-    yearView.classList.remove("hidden");
-    monthBtn.classList.remove("active");
-    yearBtn.classList.add("active");
+    if (mode === "month") {
+      calendar.classList.remove("hidden");
+      yearView.classList.add("hidden");
+      monthBtn.classList.add("active");
+      yearBtn.classList.remove("active");
+    } else {
+      calendar.classList.add("hidden");
+      yearView.classList.remove("hidden");
+      monthBtn.classList.remove("active");
+      yearBtn.classList.add("active");
 
-    renderYear();
+      renderYear();
+    }
+
+    saveToLocal();
   }
-
-  saveToLocal();
-}
     
 
     function setCycleStart() {
@@ -597,7 +597,8 @@ function setViewMode(mode) {
 
         div.addEventListener("touchstart", () => {
           pressTimer = setTimeout(() => {
-            openModal(date);
+            vibrate("medium");
+            openModal(date);;
           }, 500);
         });
 
@@ -607,6 +608,7 @@ function setViewMode(mode) {
 
         div.addEventListener("mousedown", () => {
           pressTimer = setTimeout(() => {
+            vibrate("medium");
             openModal(date);
           }, 500);
         });
@@ -620,6 +622,7 @@ function setViewMode(mode) {
         });
 
         div.addEventListener("dblclick", () => {
+          vibrate("medium");
           openModal(date);
         });
 
@@ -712,6 +715,12 @@ function setViewMode(mode) {
     }
   } else {
     loadFromLocal();
+  }
+  
+    function vibrate(type = "light") {
+    const tg = window.Telegram?.WebApp;
+    if (!tg || !tg.HapticFeedback) return;
+    tg.HapticFeedback.impactOccurred(type);
   }
     current = new Date(lastStart.getFullYear(), lastStart.getMonth(), 1);
     render();
