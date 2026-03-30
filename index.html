@@ -243,7 +243,8 @@
     }
 
     let selectedDays = [];
-    let current = new Date();
+    const now = new Date();
+    let current = new Date(now.getFullYear(), now.getMonth(), 1);
     let modalDate = null;
     let pressTimer = null;
 
@@ -352,12 +353,12 @@
     }
 
     function prevMonth() {
-      current.setMonth(current.getMonth() - 1);
+      current = new Date(current.getFullYear(), current.getMonth() - 1, 1);
       render();
     }
 
     function nextMonth() {
-      current.setMonth(current.getMonth() + 1);
+      current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
       render();
     }
 
