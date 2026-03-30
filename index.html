@@ -254,6 +254,10 @@ function render() {
 
         grid.appendChild(div);
     }
+
+function normalize(date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}    
 }
 
 function showInfo(date) {
@@ -263,7 +267,9 @@ function showInfo(date) {
     const nextCycle = getNextCycleStart();
     const diffToNext = Math.ceil((nextCycle - date) / 86400000);
 
-    const diff = Math.floor((date - lastStart) / 86400000) + 1;
+    const diff = Math.floor(
+    (normalize(date) - normalize(lastStart)) / 86400000
+    );
 
     status.innerText = `День цикла ${diff}`;
 
