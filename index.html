@@ -224,29 +224,28 @@
     }
 
     .year-view {
-      background: white;
-      border-radius: 20px;
-      padding: 24px 16px;
-      margin: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .year-placeholder {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      color: #777;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .year-view {
-  display: grid;
+  background: white;
+  border-radius: 20px;
+  margin: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 10px;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  padding: 10px;
+}
+
+.year-view:not(.hidden) {
+  display: grid;
+}
+
+.year-placeholder {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #777;
+}
+
+.hidden {
+  display: none !important;
 }
 
     .year-month {
@@ -403,14 +402,6 @@
       document.getElementById("day-modal").classList.add("hidden");
     }
 
-    function setViewMode(mode) {
-      viewMode = mode;
-
-      const calendar = document.querySelector(".calendar");
-      const yearView = document.getElementById("year-view");
-      const monthBtn = document.getElementById("month-view-btn");
-      const yearBtn = document.getElementById("year-view-btn");
-
 function setViewMode(mode) {
   viewMode = mode;
 
@@ -420,21 +411,22 @@ function setViewMode(mode) {
   const yearBtn = document.getElementById("year-view-btn");
 
   if (mode === "month") {
-      calendar.classList.remove("hidden");
-      yearView.classList.add("hidden");
-      monthBtn.classList.add("active");
-      yearBtn.classList.remove("active");
-     } 
-    else {
-      calendar.classList.add("hidden");
-      yearView.classList.remove("hidden");
-      monthBtn.classList.remove("active");
-      yearBtn.classList.add("active");
+    calendar.classList.remove("hidden");
+    yearView.classList.add("hidden");
+    monthBtn.classList.add("active");
+    yearBtn.classList.remove("active");
+  } else {
+    calendar.classList.add("hidden");
+    yearView.classList.remove("hidden");
+    monthBtn.classList.remove("active");
+    yearBtn.classList.add("active");
 
-      renderYear(); // 👈 ВАЖНО
-      }
-    }
-    }
+    renderYear();
+  }
+
+  saveToLocal();
+}
+    
 
     function setCycleStart() {
       if (!modalDate) return;
