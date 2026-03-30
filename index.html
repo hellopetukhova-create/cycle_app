@@ -167,10 +167,6 @@
       z-index: 1000;
     }
 
-    .hidden {
-      display: none;
-    }
-
     .modal-box {
       width: calc(100% - 24px);
       max-width: 420px;
@@ -202,6 +198,49 @@
       font-size: 18px;
       font-weight: 600;
     }
+
+    .view-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 10px 10px;
+}
+
+.view-btn {
+  border: none;
+  background: #f3f3f3;
+  color: #555;
+  padding: 10px 18px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn.active {
+  background: #111;
+  color: white;
+}
+
+.year-view {
+  background: white;
+  border-radius: 20px;
+  padding: 24px 16px;
+  margin: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.year-placeholder {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #777;
+}
+
+.hidden {
+  display: none;
+}
   </style>
 </head>
 
@@ -212,12 +251,23 @@
     <button class="nav-btn" onclick="nextMonth()">→</button>
   </div>
 
+  <div class="view-switch">
+    <button id="month-view-btn" class="view-btn active" onclick="setViewMode('month')">Месяц</button>
+    <button id="year-view-btn" class="view-btn" onclick="setViewMode('year')">Год</button>
+  </div>
+
   <div class="calendar">
     <div class="weekdays">
       <div>Пн</div><div>Вт</div><div>Ср</div>
       <div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
     </div>
     <div id="grid" class="grid"></div>
+  </div>
+
+  <div id="year-view" class="year-view hidden">
+    <div class="year-placeholder">
+      Режим года скоро будет здесь ✨
+    </div>
   </div>
 
   <div class="card">
@@ -250,6 +300,7 @@
     let current = new Date(now.getFullYear(), now.getMonth(), 1);
     let modalDate = null;
     let pressTimer = null;
+    let viewMode = "month";
 
     let cycleLength = 28;
     let periodLength = 5;
@@ -281,7 +332,8 @@
         selectedDays,
         lastStart: formatISO(lastStart),
         cycleLength,
-        periodLength
+        periodLength,
+        viewMode
       };
       localStorage.setItem("cycleAppState", JSON.stringify(state));
       setSaveStatus("Локально сохранено ✓");
@@ -297,6 +349,7 @@
         cycleLength = state.cycleLength ?? cycleLength;
         periodLength = state.periodLength ?? periodLength;
         lastStart = state.lastStart ? new Date(state.lastStart) : lastStart;
+        viewMode = state.viewMode ?? "month";
       } catch (error) {
         console.error("Ошибка чтения localStorage:", error);
       }
@@ -310,6 +363,27 @@
     function closeModal() {
       modalDate = null;
       document.getElementById("day-modal").classList.add("hidden");
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+
+      const calendar = document.querySelector(".calendar");
+      const yearView = document.getElementById("year-view");
+      const monthBtn = document.getElementById("month-view-btn");
+      const yearBtn = document.getElementById("year-view-btn");
+
+      if (mode === "month") {
+        calendar.classList.remove("hidden");
+        yearView.classList.add("hidden");
+        monthBtn.classList.add("active");
+        yearBtn.classList.remove("active");
+      } else {
+        calendar.classList.add("hidden");
+        yearView.classList.remove("hidden");
+        monthBtn.classList.remove("active");
+        yearBtn.classList.add("active");
+      }
     }
 
     function setCycleStart() {
@@ -572,6 +646,7 @@
   }
 
     render();
+    setViewMode(viewMode);
   </script>
 </body>
 </html>
