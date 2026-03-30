@@ -187,67 +187,48 @@ function render() {
         grid.appendChild(document.createElement("div"));
     }
 
-    for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(year, m, d);
-        const div = document.createElement("div");
-        div.classList.add("day");
+for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, m, d);
+    const div = document.createElement("div");
+    div.classList.add("day");
 
-        // 🔥 ФИКС ДАТЫ
-        const diff = Math.floor(
-            (normalize(date) - normalize(lastStart)) / 86400000
-        );
+    const diff = Math.floor(
+        (normalize(date) - normalize(lastStart)) / 86400000
+    );
+    let cycleDay = diff >= 0 ? (diff % cycleLength) + 1 : null;
 
-        let cycleDay = null;
-        if (diff >= 0) {
-            cycleDay = (diff % cycleLength) + 1;
-        }
+    // создаём HTML
+    div.innerHTML = `
+        <div class="day-number">${d}</div>
+        <div class="cycle-dot"></div>
+    `;
 
-        div.innerHTML = `
-        <div style="font-size:14px">${d}</div>
-        ${cycleDay ? `<div style="font-size:10px; color:#999">${cycleDay}</div>` : ""}
-        `;
+    const dot = div.querySelector(".cycle-dot");
 
+    // окрашиваем кружочек по состоянию
+    const periodEnd = new Date(normalize(lastStart).getTime() + periodLength * 86400000);
+    const ovulation = getOvulation(lastStart);
+    const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+    const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+
+    if (isBetween(date, lastStart, periodEnd)) dot.classList.add("period");
+    else if (date.toDateString() === ovulation.toDateString()) dot.classList.add("ovulation");
+    else if (isBetween(date, fertileStart, fertileEnd)) dot.classList.add("fertile");
+
+    div.onclick = () => {
         const iso = date.toISOString().split("T")[0];
-
-        if (date.toDateString() === new Date().toDateString()) {
-            div.classList.add("today");
-        }
-
-        if (date.toDateString() === nextCycle.toDateString()) {
-            div.style.border = "2px dashed #ff4d6d";
-        }
-
         if (selectedDays.includes(iso)) {
-            div.classList.add("period");
+            selectedDays = selectedDays.filter(d => d !== iso);
+            dot.className = "cycle-dot"; // убираем все состояния
+        } else {
+            selectedDays.push(iso);
+            dot.classList.add("period"); // добавляем красный кружочек
         }
+        showInfo(date);
+    };
 
-        const periodEnd = new Date(normalize(lastStart).getTime() + periodLength * 86400000);
-        if (isBetween(date, lastStart, periodEnd)) {
-            div.classList.add("period");
-        }
-
-        if (date.toDateString() === ovulation.toDateString()) {
-            div.classList.add("ovulation");
-        }
-
-        if (isBetween(date, fertileStart, fertileEnd)) {
-            div.classList.add("fertile");
-        }
-
-        div.onclick = () => {
-            if (selectedDays.includes(iso)) {
-                selectedDays = selectedDays.filter(d => d !== iso);
-                div.classList.remove("period");
-            } else {
-                selectedDays.push(iso);
-                div.classList.add("period");
-            }
-
-            showInfo(date);
-        };
-
-        grid.appendChild(div);
-    }
+    grid.appendChild(div);
+}
 }
 
 // ===== ИНФО =====
