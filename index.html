@@ -559,20 +559,33 @@
     const params = new URLSearchParams(window.location.search);
     const data = params.get("data");
 
-    if (data) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(data));
-        cycleLength = userData.cycle_length ?? 28;
-        periodLength = userData.period_length ?? 5;
-        lastStart = userData.last_start ? new Date(userData.last_start) : new Date("2026-03-13");
-        selectedDays = Array.isArray(userData.marked_days) ? userData.marked_days : [];
-      } catch (error) {
-        console.error("Ошибка чтения data из URL:", error);
-      }
-    }
+  const params = new URLSearchParams(window.location.search);
+const data = params.get("data");
 
+if (data) {
+  try {
+    const userData = JSON.parse(decodeURIComponent(data));
+
+    cycleLength = userData.cycle_length ?? 28;
+    periodLength = userData.period_length ?? 5;
+    lastStart = userData.last_start
+      ? new Date(userData.last_start)
+      : new Date("2026-03-13");
+    selectedDays = Array.isArray(userData.marked_days)
+      ? userData.marked_days
+      : [];
+
+    // обновляем локальное хранилище актуальными данными из бота
+    saveToLocal();
+  } catch (error) {
+    console.error("Ошибка чтения data из URL:", error);
     loadFromLocal();
-    render();
+  }
+} else {
+  loadFromLocal();
+}
+
+render();
   </script>
 </body>
 </html>
