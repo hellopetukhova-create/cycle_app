@@ -114,18 +114,20 @@
     }
 
     .big {
-        font-size: 18px;
-        font-weight: 600;
-        text-align: center;
-        color: #000;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      color: #000;
     }
 
     .small {
-        font-size: 14px;
-        font-weight: 600;
-        text-align: center;
-        color: #888;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      color: #888;
+      white-space: pre-line;
     }
+
     .nav-btn {
       background: none;
       border: none;
@@ -197,8 +199,8 @@
     }
 
     #month {
-        font-size: 18px;
-        font-weight: 600;
+      font-size: 18px;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -234,347 +236,341 @@
       <button class="modal-cancel" onclick="closeModal()">Отмена</button>
     </div>
   </div>
-<script>
-  const tg = window.Telegram?.WebApp;
 
-  if (tg) {
-    tg.ready();
-    tg.expand();
-  }
+  <script>
+    const tg = window.Telegram?.WebApp;
 
-  let selectedDays = [];
-  const now = new Date();
-  let current = new Date(now.getFullYear(), now.getMonth(), 1);
-  let modalDate = null;
-  let pressTimer = null;
-
-  let cycleLength = 28;
-  let periodLength = 5;
-  let lastStart = new Date("2026-03-13");
-
-  const monthNames = [
-    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-  ];
-
-  function normalize(date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  }
-
-  function formatISO(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }
-
-  function setSaveStatus(text) {
-    const statusEl = document.getElementById("save-status");
-    if (statusEl) statusEl.innerText = text;
-  }
-
-  function saveToLocal() {
-    const state = {
-      selectedDays,
-      lastStart: formatISO(lastStart),
-      cycleLength,
-      periodLength
-    };
-
-    localStorage.setItem("cycleAppState", JSON.stringify(state));
-    setSaveStatus("Локально сохранено ✓");
-  }
-
-  function loadFromLocal() {
-    const raw = localStorage.getItem("cycleAppState");
-    if (!raw) return;
-
-    try {
-      const state = JSON.parse(raw);
-      selectedDays = Array.isArray(state.selectedDays) ? state.selectedDays : [];
-      cycleLength = state.cycleLength ?? cycleLength;
-      periodLength = state.periodLength ?? periodLength;
-      lastStart = state.lastStart ? new Date(state.lastStart) : lastStart;
-    } catch (error) {
-      console.error("Ошибка чтения localStorage:", error);
-    }
-  }
-
-  function openModal(date) {
-    modalDate = date;
-    document.getElementById("day-modal").classList.remove("hidden");
-  }
-
-  function closeModal() {
-    modalDate = null;
-    document.getElementById("day-modal").classList.add("hidden");
-  }
-
-  function setCycleStart() {
-    if (!modalDate) return;
-
-    lastStart = new Date(modalDate);
-    selectedDays = [];
-
-    saveToLocal();
-    render();
-    showInfo(modalDate);
-    closeModal();
-  }
-
-  function markPeriodDay() {
-    if (!modalDate) return;
-
-    const iso = formatISO(modalDate);
-
-    if (!selectedDays.includes(iso)) {
-      selectedDays.push(iso);
+    if (tg) {
+      tg.ready();
+      tg.expand();
     }
 
-    saveToLocal();
-    render();
-    showInfo(modalDate);
-    closeModal();
-  }
+    let selectedDays = [];
+    const now = new Date();
+    let current = new Date(now.getFullYear(), now.getMonth(), 1);
+    let modalDate = null;
+    let pressTimer = null;
 
-  function removePeriodDay() {
-    if (!modalDate) return;
+    let cycleLength = 28;
+    let periodLength = 5;
+    let lastStart = new Date("2026-03-13");
 
-    const iso = formatISO(modalDate);
-    selectedDays = selectedDays.filter(day => day !== iso);
+    const monthNames = [
+      "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    ];
 
-    saveToLocal();
-    render();
-    showInfo(modalDate);
-    closeModal();
-  }
-
-  function prevMonth() {
-    current = new Date(current.getFullYear(), current.getMonth() - 1, 1);
-    render();
-  }
-
-  function nextMonth() {
-    current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
-    render();
-  }
-
-  function getNextCycleStart() {
-    return new Date(normalize(lastStart).getTime() + cycleLength * 86400000);
-  }
-
-  function getOvulation(start) {
-    return new Date(normalize(start).getTime() + (cycleLength - 14) * 86400000);
-  }
-
-  function isBetween(date, start, end) {
-    return normalize(date) >= normalize(start) && normalize(date) <= normalize(end);
-  }
-
-  function render() {
-    const grid = document.getElementById("grid");
-    const month = document.getElementById("month");
-
-    grid.innerHTML = "";
-
-    const year = current.getFullYear();
-    const m = current.getMonth();
-
-    month.innerText = `${monthNames[m]} ${year}`;
-
-    const firstDay = new Date(year, m, 1).getDay();
-    const offset = firstDay === 0 ? 6 : firstDay - 1;
-    const daysInMonth = new Date(year, m + 1, 0).getDate();
-
-    const ovulation = getOvulation(lastStart);
-    const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
-    const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
-    const nextCycle = getNextCycleStart();
-    const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
-
-    for (let i = 0; i < offset; i++) {
-      grid.appendChild(document.createElement("div"));
+    function normalize(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
 
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(year, m, d);
-      const div = document.createElement("div");
-      div.classList.add("day");
+    function formatISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function setSaveStatus(text) {
+      const statusEl = document.getElementById("save-status");
+      if (statusEl) statusEl.innerText = text;
+    }
+
+    function saveToLocal() {
+      const state = {
+        selectedDays,
+        lastStart: formatISO(lastStart),
+        cycleLength,
+        periodLength
+      };
+      localStorage.setItem("cycleAppState", JSON.stringify(state));
+      setSaveStatus("Локально сохранено ✓");
+    }
+
+    function loadFromLocal() {
+      const raw = localStorage.getItem("cycleAppState");
+      if (!raw) return;
+
+      try {
+        const state = JSON.parse(raw);
+        selectedDays = Array.isArray(state.selectedDays) ? state.selectedDays : [];
+        cycleLength = state.cycleLength ?? cycleLength;
+        periodLength = state.periodLength ?? periodLength;
+        lastStart = state.lastStart ? new Date(state.lastStart) : lastStart;
+      } catch (error) {
+        console.error("Ошибка чтения localStorage:", error);
+      }
+    }
+
+    function openModal(date) {
+      modalDate = date;
+      document.getElementById("day-modal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      modalDate = null;
+      document.getElementById("day-modal").classList.add("hidden");
+    }
+
+    function setCycleStart() {
+      if (!modalDate) return;
+
+      lastStart = new Date(modalDate);
+      selectedDays = [];
+
+      saveToLocal();
+      render();
+      showInfo(modalDate);
+      closeModal();
+    }
+
+    function markPeriodDay() {
+      if (!modalDate) return;
+
+      const iso = formatISO(modalDate);
+      if (!selectedDays.includes(iso)) {
+        selectedDays.push(iso);
+      }
+
+      saveToLocal();
+      render();
+      showInfo(modalDate);
+      closeModal();
+    }
+
+    function removePeriodDay() {
+      if (!modalDate) return;
+
+      const iso = formatISO(modalDate);
+      selectedDays = selectedDays.filter(day => day !== iso);
+
+      saveToLocal();
+      render();
+      showInfo(modalDate);
+      closeModal();
+    }
+
+    function prevMonth() {
+      current = new Date(current.getFullYear(), current.getMonth() - 1, 1);
+      render();
+    }
+
+    function nextMonth() {
+      current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+      render();
+    }
+
+    function getNextCycleStart() {
+      return new Date(normalize(lastStart).getTime() + cycleLength * 86400000);
+    }
+
+    function getOvulation(start) {
+      return new Date(normalize(start).getTime() + (cycleLength - 14) * 86400000);
+    }
+
+    function isBetween(date, start, end) {
+      return normalize(date) >= normalize(start) && normalize(date) <= normalize(end);
+    }
+
+    function render() {
+      const grid = document.getElementById("grid");
+      const month = document.getElementById("month");
+
+      grid.innerHTML = "";
+
+      const year = current.getFullYear();
+      const m = current.getMonth();
+
+      month.innerText = `${monthNames[m]} ${year}`;
+
+      const firstDay = new Date(year, m, 1).getDay();
+      const offset = firstDay === 0 ? 6 : firstDay - 1;
+      const daysInMonth = new Date(year, m + 1, 0).getDate();
+
+      const ovulation = getOvulation(lastStart);
+      const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+      const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+      const nextCycle = getNextCycleStart();
+      const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
+
+      for (let i = 0; i < offset; i++) {
+        grid.appendChild(document.createElement("div"));
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, m, d);
+        const div = document.createElement("div");
+        div.classList.add("day");
+
+        const diff = Math.floor(
+          (normalize(date) - normalize(lastStart)) / 86400000
+        );
+
+        let cycleDay = null;
+        if (diff >= 0) {
+          cycleDay = (diff % cycleLength) + 1;
+        }
+
+        div.innerHTML = `
+          <div class="day-number">${d}</div>
+          ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
+          <div class="cycle-dot normal"></div>
+        `;
+
+        const dot = div.querySelector(".cycle-dot");
+        const iso = formatISO(date);
+
+        let baseStatus = "normal";
+
+        if (isBetween(date, lastStart, periodEnd)) {
+          baseStatus = "period";
+        } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
+          baseStatus = "ovulation";
+        } else if (isBetween(date, fertileStart, fertileEnd)) {
+          baseStatus = "fertile";
+        }
+
+        dot.className = `cycle-dot ${baseStatus}`;
+        dot.dataset.baseStatus = baseStatus;
+
+        if (selectedDays.includes(iso)) {
+          dot.className = "cycle-dot period";
+          dot.dataset.userSelected = "true";
+        } else {
+          dot.dataset.userSelected = "false";
+        }
+
+        if (normalize(date).getTime() === normalize(new Date()).getTime()) {
+          div.classList.add("today");
+        }
+
+        if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
+          div.style.border = "2px dashed #ff5c8a";
+        }
+
+        div.addEventListener("click", () => {
+          showInfo(date);
+        });
+
+        div.addEventListener("touchstart", () => {
+          pressTimer = setTimeout(() => {
+            openModal(date);
+          }, 500);
+        });
+
+        div.addEventListener("touchend", () => {
+          clearTimeout(pressTimer);
+        });
+
+        div.addEventListener("mousedown", () => {
+          pressTimer = setTimeout(() => {
+            openModal(date);
+          }, 500);
+        });
+
+        div.addEventListener("mouseup", () => {
+          clearTimeout(pressTimer);
+        });
+
+        div.addEventListener("mouseleave", () => {
+          clearTimeout(pressTimer);
+        });
+
+        div.addEventListener("dblclick", () => {
+          openModal(date);
+        });
+
+        grid.appendChild(div);
+      }
+    }
+
+    function showInfo(date) {
+      const status = document.getElementById("status");
+      const info = document.getElementById("info");
+
+      const nextCycle = getNextCycleStart();
+      const diffToNext = Math.ceil(
+        (normalize(nextCycle) - normalize(date)) / 86400000
+      );
 
       const diff = Math.floor(
         (normalize(date) - normalize(lastStart)) / 86400000
-      );
+      ) + 1;
 
-      let cycleDay = null;
-      if (diff >= 0) {
-        cycleDay = (diff % cycleLength) + 1;
-      }
+      status.innerText = diff > 0 ? `День цикла ${diff}` : "До начала цикла";
 
-      div.innerHTML = `
-        <div class="day-number">${d}</div>
-        ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
-        <div class="cycle-dot normal"></div>
-      `;
+      const ovulation = getOvulation(lastStart);
+      const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+      const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+      const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
 
-      const dot = div.querySelector(".cycle-dot");
-      const iso = formatISO(date);
-
-      let baseStatus = "normal";
-
-      if (isBetween(date, lastStart, periodEnd)) {
-        baseStatus = "period";
+      if (diff < 1) {
+        info.innerText = "До начала цикла";
+      } else if (isBetween(date, lastStart, periodEnd)) {
+        info.innerText = `Менструация 🩸\nДо следующего цикла: ${diffToNext} дн.`;
       } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
-        baseStatus = "ovulation";
+        info.innerText = `Овуляция 💜\nДо следующего цикла: ${diffToNext} дн.`;
       } else if (isBetween(date, fertileStart, fertileEnd)) {
-        baseStatus = "fertile";
-      }
-
-      dot.className = `cycle-dot ${baseStatus}`;
-      dot.dataset.baseStatus = baseStatus;
-
-      if (selectedDays.includes(iso)) {
-        dot.className = "cycle-dot period";
-        dot.dataset.userSelected = "true";
+        info.innerText = `Фертильное окно 🌸\nДо следующего цикла: ${diffToNext} дн.`;
       } else {
-        dot.dataset.userSelected = "false";
+        info.innerText = `Обычный день\nДо следующего цикла: ${diffToNext} дн.`;
       }
-
-      if (normalize(date).getTime() === normalize(new Date()).getTime()) {
-        div.classList.add("today");
-      }
-
-      if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
-        div.style.border = "2px dashed #ff5c8a";
-      }
-
-      div.addEventListener("click", () => {
-        showInfo(date);
-      });
-
-      div.addEventListener("touchstart", () => {
-        pressTimer = setTimeout(() => {
-          openModal(date);
-        }, 500);
-      });
-
-      div.addEventListener("touchend", () => {
-        clearTimeout(pressTimer);
-      });
-
-      div.addEventListener("mousedown", () => {
-        pressTimer = setTimeout(() => {
-          openModal(date);
-        }, 500);
-      });
-
-      div.addEventListener("mouseup", () => {
-        clearTimeout(pressTimer);
-      });
-
-      div.addEventListener("mouseleave", () => {
-        clearTimeout(pressTimer);
-      });
-
-      div.addEventListener("dblclick", () => {
-        openModal(date);
-      });
-
-      grid.appendChild(div);
     }
-  }
 
-  function showInfo(date) {
-    const status = document.getElementById("status");
-    const info = document.getElementById("info");
+    function sendSave() {
+      const tg = window.Telegram?.WebApp;
 
-    const nextCycle = getNextCycleStart();
-    const diffToNext = Math.ceil(
-      (normalize(nextCycle) - normalize(date)) / 86400000
-    );
+      if (!tg || !tg.sendData) {
+        setSaveStatus("Открыто не в Telegram\nили WebApp API недоступен");
+        console.error("Telegram WebApp API недоступен");
+        return;
+      }
 
-    const diff = Math.floor(
-      (normalize(date) - normalize(lastStart)) / 86400000
-    ) + 1;
+      try {
+        const payload = {
+          type: "save_cycle",
+          days: selectedDays,
+          last_start: formatISO(lastStart)
+        };
 
-    status.innerText = diff > 0 ? `День цикла ${diff}` : "До начала цикла";
+        tg.sendData(JSON.stringify(payload));
+        setSaveStatus("Отправлено в бот ✓");
 
-    const ovulation = getOvulation(lastStart);
-    const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
-    const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
-    const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
+        setTimeout(() => {
+          tg.close();
+        }, 300);
+      } catch (error) {
+        console.error("Ошибка отправки в бот:", error);
+        setSaveStatus("Ошибка отправки");
+      }
+    }
 
-    if (diff < 1) {
-      info.innerText = "До начала цикла";
-    } else if (isBetween(date, lastStart, periodEnd)) {
-      info.innerText = `Менструация 🩸\nДо следующего цикла: ${diffToNext} дн.`;
-    } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
-      info.innerText = `Овуляция 💜\nДо следующего цикла: ${diffToNext} дн.`;
-    } else if (isBetween(date, fertileStart, fertileEnd)) {
-      info.innerText = `Фертильное окно 🌸\nДо следующего цикла: ${diffToNext} дн.`;
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get("data");
+
+    if (data) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(data));
+
+        cycleLength = userData.cycle_length ?? 28;
+        periodLength = userData.period_length ?? 5;
+        lastStart = userData.last_start
+          ? new Date(userData.last_start)
+          : new Date("2026-03-13");
+        selectedDays = Array.isArray(userData.marked_days)
+          ? userData.marked_days
+          : [];
+
+        saveToLocal();
+      } catch (error) {
+        console.error("Ошибка чтения data из URL:", error);
+        loadFromLocal();
+      }
     } else {
-      info.innerText = `Обычный день\nДо следующего цикла: ${diffToNext} дн.`;
-    }
-  }
-
-  function sendSave() {
-    const tg = window.Telegram?.WebApp;
-
-    if (!tg || !tg.sendData) {
-      setSaveStatus("Открыто не в Telegram\nили WebApp API недоступен");
-      console.error("Telegram WebApp API недоступен");
-      return;
-    }
-
-    try {
-      const payload = {
-        type: "save_cycle",
-        days: selectedDays,
-        last_start: formatISO(lastStart)
-      };
-
-      console.log("Отправляем в бот:", payload);
-
-      tg.sendData(JSON.stringify(payload));
-      setSaveStatus("Отправлено в бот ✓");
-
-      setTimeout(() => {
-        tg.close();
-      }, 300);
-    } catch (error) {
-      console.error("Ошибка отправки в бот:", error);
-      setSaveStatus("Ошибка отправки");
-    }
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const data = params.get("data");
-
-  if (data) {
-    try {
-      const userData = JSON.parse(decodeURIComponent(data));
-
-      console.log("Данные из бота:", userData);
-
-      cycleLength = userData.cycle_length ?? 28;
-      periodLength = userData.period_length ?? 5;
-      lastStart = userData.last_start
-        ? new Date(userData.last_start)
-        : new Date("2026-03-13");
-
-      selectedDays = Array.isArray(userData.marked_days)
-        ? userData.marked_days
-        : [];
-
-      saveToLocal();
-    } catch (error) {
-      console.error("Ошибка чтения data из URL:", error);
       loadFromLocal();
     }
-  } else {
-    loadFromLocal();
-  }
 
-  render();
-</script>
+    render();
+  </script>
 </body>
 </html>
