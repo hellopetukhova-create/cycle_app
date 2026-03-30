@@ -52,6 +52,7 @@ body {
     height: 45px;
     border-radius: 12px;
     display: flex;
+    flex-direction: column; /* 👈 ВАЖНО */
     align-items: center;
     justify-content: center;
     background: #f5f5f5;
@@ -190,12 +191,17 @@ function render() {
         const date = new Date(year, m, d);
         const div = document.createElement("div");
         div.classList.add("day");
+        const diff = Math.floor((date - lastStart) / 86400000);
+        let cycleDay = null;
+
+        if (diff >= 0) {
+          cycleDay = (diff % cycleLength) + 1;
+        }
+
         div.innerHTML = `
         <div style="font-size:14px">${d}</div>
         ${cycleDay ? `<div style="font-size:10px; color:#999">${cycleDay}</div>` : ""}
         `;
-        const diff = Math.floor((date - lastStart) / 86400000);
-        let cycleDay = null;
 
         if (diff >= 0) {
     cycleDay = (diff % cycleLength) + 1;
