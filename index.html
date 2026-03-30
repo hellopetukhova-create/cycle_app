@@ -190,7 +190,16 @@ function render() {
         const date = new Date(year, m, d);
         const div = document.createElement("div");
         div.classList.add("day");
-        div.innerText = d;
+        div.innerHTML = `
+        <div style="font-size:14px">${d}</div>
+        ${cycleDay ? `<div style="font-size:10px; color:#999">${cycleDay}</div>` : ""}
+        `;
+        const diff = Math.floor((date - lastStart) / 86400000);
+        let cycleDay = null;
+
+        if (diff >= 0) {
+    cycleDay = (diff % cycleLength) + 1;
+}
 
         const iso = date.toISOString().split("T")[0];
 
