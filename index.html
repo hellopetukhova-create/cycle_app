@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cycle App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     body {
@@ -137,6 +138,7 @@
       font-size: 14px;
       color: #888;
       text-align: center;
+      white-space: pre-line;
     }
 
     .save-btn {
@@ -229,10 +231,12 @@
 
   <script>
     const tg = window.Telegram?.WebApp;
+
     if (tg) {
-    tg.ready();
-    tg.expand();
-}
+      tg.ready();
+      tg.expand();
+    }
+
     let selectedDays = [];
     let current = new Date();
     let modalDate = null;
@@ -419,7 +423,10 @@
         }
 
         dot.className = `cycle-dot ${baseStatus}`;
-        dot.dataset.baseStatus = baseStatus;
+
+        if (selectedDays.includes(iso)) {
+          dot.className = "cycle-dot period";
+        }
 
         if (normalize(date).getTime() === normalize(new Date()).getTime()) {
           div.classList.add("today");
@@ -427,11 +434,6 @@
 
         if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
           div.style.border = "2px dashed #ff5c8a";
-        }
-
-        if (selectedDays.includes(iso)) {
-          dot.className = "cycle-dot period";
-          dot.dataset.userSelected = "true";
         }
 
         div.addEventListener("click", () => {
@@ -503,35 +505,35 @@
       }
     }
 
-function sendSave() {
-  const tg = window.Telegram?.WebApp;
+    function sendSave() {
+      const tg = window.Telegram?.WebApp;
 
-  if (!tg) {
-    setSaveStatus("Открыто не в Telegram");
-    console.error("Telegram WebApp API недоступен");
-    return;
-  }
+      if (!tg || !tg.sendData) {
+        setSaveStatus("Открыто не в Telegram\nили WebApp API недоступен");
+        console.error("Telegram WebApp API недоступен");
+        return;
+      }
 
-  try {
-    const payload = {
-      type: "save_cycle",
-      days: selectedDays,
-      last_start: formatISO(lastStart)
-    };
+      try {
+        const payload = {
+          type: "save_cycle",
+          days: selectedDays,
+          last_start: formatISO(lastStart)
+        };
 
-    console.log("Отправляем в бот:", payload);
+        console.log("Отправляем в бот:", payload);
 
-    tg.sendData(JSON.stringify(payload));
-    setSaveStatus("Отправлено в бот ✓");
+        tg.sendData(JSON.stringify(payload));
+        setSaveStatus("Отправлено в бот ✓");
 
-    setTimeout(() => {
-      tg.close();
-    }, 300);
-  } catch (error) {
-    console.error("Ошибка отправки в бот:", error);
-    setSaveStatus("Ошибка отправки");
-  }
-}
+        setTimeout(() => {
+          tg.close();
+        }, 300);
+      } catch (error) {
+        console.error("Ошибка отправки в бот:", error);
+        setSaveStatus("Ошибка отправки");
+      }
+    }
 
     const params = new URLSearchParams(window.location.search);
     const data = params.get("data");
@@ -539,7 +541,6 @@ function sendSave() {
     if (data) {
       try {
         const userData = JSON.parse(decodeURIComponent(data));
-
         cycleLength = userData.cycle_length ?? 28;
         periodLength = userData.period_length ?? 5;
         lastStart = userData.last_start ? new Date(userData.last_start) : new Date("2026-03-13");
