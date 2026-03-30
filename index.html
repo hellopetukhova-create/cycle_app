@@ -8,9 +8,8 @@
 <style>
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont;
     background: #ffffff;
-    color: #222;
 }
 
 .header {
@@ -35,44 +34,37 @@ body {
     text-align: center;
     color: #999;
     font-size: 12px;
-    margin-bottom: 6px;
 }
 
 .grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
+    margin-top: 10px;
 }
 
 .day {
-    height: 56px;
-    border-radius: 14px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     position: relative;
-    border: 1px solid #f1f1f1;
+    border: 1px solid #f5f5f5;
     background: #ffffff;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-}
-
-.day:active {
-    transform: scale(0.98);
 }
 
 .day-number {
-    font-size: 13px;
+    font-size: 12px;
     color: #333;
-    line-height: 1;
 }
 
-.cycle-day {
-    font-size: 10px;
-    color: #a0a0a0;
+.day-number {
+    font-size: 12px;
+    color: #333;
     line-height: 1;
-    margin-top: 3px;
 }
 
 .cycle-dot {
@@ -82,10 +74,6 @@ body {
     margin-top: 5px;
     background: #e9e9e9;
     transition: all 0.2s ease;
-}
-
-.cycle-dot.normal {
-    background: #e9e9e9;
 }
 
 .cycle-dot.period {
@@ -100,8 +88,26 @@ body {
     background: #ffd1dc;
 }
 
+.cycle-dot.normal {
+    background: #e9e9e9;
+}
+
+.period {
+    background: #ff5c8a;
+    color: white;
+}
+
+.ovulation {
+    background: #3b2b8f;
+    color: white;
+}
+
+.fertile {
+    background: #ffd1dc;
+}
+
 .today {
-    border: 2px solid #111;
+    border: 2px solid black;
 }
 
 .card {
@@ -109,40 +115,22 @@ body {
     border-radius: 20px;
     padding: 15px;
     margin: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .big {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 6px;
+    font-size: 26px;
+    font-weight: bold;
 }
 
 .small {
     color: #777;
-    white-space: pre-line;
-    line-height: 1.4;
 }
 
-.save-btn {
-    display: block;
-    width: calc(100% - 20px);
-    margin: 12px 10px 20px;
-    padding: 14px 16px;
-    border: none;
-    border-radius: 16px;
-    background: #111;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.nav-btn {
+button {
     background: none;
     border: none;
     font-size: 20px;
     cursor: pointer;
-    color: #222;
 }
 </style>
 </head>
@@ -150,9 +138,9 @@ body {
 <body>
 
 <div class="header">
-    <button class="nav-btn" onclick="prevMonth()">←</button>
+    <button onclick="prevMonth()">←</button>
     <div id="month"></div>
-    <button class="nav-btn" onclick="nextMonth()">→</button>
+    <button onclick="nextMonth()">→</button>
 </div>
 
 <div class="calendar">
@@ -168,9 +156,11 @@ body {
     <div class="small" id="info">Информация</div>
 </div>
 
-<button class="save-btn" onclick="saveData()">Сохранить 🌸</button>
+<button onclick="saveData()">Сохранить 🌸</button>
 
 <script>
+
+// ===== ГЛОБАЛЬНЫЕ =====
 let selectedDays = [];
 let current = new Date();
 
@@ -178,14 +168,15 @@ let cycleLength = 28;
 let periodLength = 5;
 let lastStart = new Date("2026-03-13");
 
+// ===== ВАЖНО: НОРМАЛИЗАЦИЯ =====
+function normalize(date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 const monthNames = [
     "Январь","Февраль","Март","Апрель","Май","Июнь",
     "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"
 ];
-
-function normalize(date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
 
 function prevMonth() {
     current.setMonth(current.getMonth() - 1);
@@ -209,13 +200,7 @@ function isBetween(date, start, end) {
     return normalize(date) >= normalize(start) && normalize(date) <= normalize(end);
 }
 
-function formatISO(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-}
-
+// ===== ОСНОВНОЙ РЕНДЕР =====
 function render() {
     const grid = document.getElementById("grid");
     const month = document.getElementById("month");
@@ -235,117 +220,146 @@ function render() {
     const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
     const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
     const nextCycle = getNextCycleStart();
-    const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
 
     for (let i = 0; i < offset; i++) {
         grid.appendChild(document.createElement("div"));
     }
+// ---------------- Цикл рендера дней --------------------
+for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, m, d);
+    const div = document.createElement("div");
+    div.classList.add("day");
 
-    for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(year, m, d);
-        const div = document.createElement("div");
-        div.classList.add("day");
+    const diff = Math.floor(
+        (normalize(date) - normalize(lastStart)) / 86400000
+    );
 
-        const diff = Math.floor(
-            (normalize(date) - normalize(lastStart)) / 86400000
-        );
+    let cycleDay = null;
+    if (diff >= 0) {
+        cycleDay = (diff % cycleLength) + 1;
+    }
 
-        let cycleDay = null;
-        if (diff >= 0) {
-            cycleDay = (diff % cycleLength) + 1;
-        }
+    div.innerHTML = `
+        <div class="day-number">${d}</div>
+        <div class="cycle-dot normal"></div>
+    `;
 
-        div.innerHTML = `
-            <div class="day-number">${d}</div>
-            ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
-            <div class="cycle-dot normal"></div>
-        `;
+    const dot = div.querySelector(".cycle-dot");
+    const iso = date.toISOString().split("T")[0];
 
-        const dot = div.querySelector(".cycle-dot");
-        const iso = formatISO(date);
+    const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
+    const ovulation = getOvulation(lastStart);
+    const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+    const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
 
-        let baseStatus = "normal";
+    let baseStatus = "normal";
 
-        if (isBetween(date, lastStart, periodEnd)) {
-            baseStatus = "period";
-        } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
-            baseStatus = "ovulation";
-        } else if (isBetween(date, fertileStart, fertileEnd)) {
-            baseStatus = "fertile";
-        }
+    if (isBetween(date, lastStart, periodEnd)) {
+        baseStatus = "period";
+    } else if (date.toDateString() === ovulation.toDateString()) {
+        baseStatus = "ovulation";
+    } else if (isBetween(date, fertileStart, fertileEnd)) {
+        baseStatus = "fertile";
+    }
 
-        dot.className = `cycle-dot ${baseStatus}`;
-        dot.dataset.baseStatus = baseStatus;
+    dot.className = `cycle-dot ${baseStatus}`;
+    dot.dataset.baseStatus = baseStatus;
 
-        if (normalize(date).getTime() === normalize(new Date()).getTime()) {
-            div.classList.add("today");
-        }
+    if (date.toDateString() === new Date().toDateString()) {
+        div.classList.add("today");
+    }
 
-        if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
-            div.style.border = "2px dashed #ff5c8a";
-        }
+    if (date.toDateString() === nextCycle.toDateString()) {
+        div.style.border = "2px dashed #ff4d6d";
+    }
 
-        if (selectedDays.includes(iso)) {
+    if (selectedDays.includes(iso)) {
+        dot.className = "cycle-dot period";
+        dot.dataset.userSelected = "true";
+    }
+
+    div.onclick = () => {
+        const isSelected = selectedDays.includes(iso);
+
+        if (isSelected) {
+            selectedDays = selectedDays.filter(day => day !== iso);
+
+            const original = dot.dataset.baseStatus || "normal";
+            dot.className = `cycle-dot ${original}`;
+            dot.dataset.userSelected = "false";
+        } else {
+            selectedDays.push(iso);
+
             dot.className = "cycle-dot period";
             dot.dataset.userSelected = "true";
         }
 
-        div.onclick = () => {
-            const isSelected = selectedDays.includes(iso);
+        showInfo(date);
+    };
 
-            if (isSelected) {
-                selectedDays = selectedDays.filter(day => day !== iso);
-
-                const original = dot.dataset.baseStatus || "normal";
-                dot.className = `cycle-dot ${original}`;
-                dot.dataset.userSelected = "false";
-            } else {
-                selectedDays.push(iso);
-
-                dot.className = "cycle-dot period";
-                dot.dataset.userSelected = "true";
-            }
-
-            showInfo(date);
-        };
-
-        grid.appendChild(div);
-    }
+    grid.appendChild(div);
 }
 
+    // создаём HTML
+    div.innerHTML = `
+        <div class="day-number">${d}</div>
+        <div class="cycle-dot"></div>
+    `;
+
+    const dot = div.querySelector(".cycle-dot");
+
+    // окрашиваем кружочек по состоянию
+    const periodEnd = new Date(normalize(lastStart).getTime() + periodLength * 86400000);
+    const ovulation = getOvulation(lastStart);
+    const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+    const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+
+    if (isBetween(date, lastStart, periodEnd)) dot.classList.add("period");
+    else if (date.toDateString() === ovulation.toDateString()) dot.classList.add("ovulation");
+    else if (isBetween(date, fertileStart, fertileEnd)) dot.classList.add("fertile");
+
+    div.onclick = () => {
+        const iso = date.toISOString().split("T")[0];
+        if (selectedDays.includes(iso)) {
+            selectedDays = selectedDays.filter(d => d !== iso);
+            dot.className = "cycle-dot"; // убираем все состояния
+        } else {
+            selectedDays.push(iso);
+            dot.classList.add("period"); // добавляем красный кружочек
+        }
+        showInfo(date);
+    };
+
+    grid.appendChild(div);
+}
+}
+
+// ===== ИНФО =====
 function showInfo(date) {
     const status = document.getElementById("status");
     const info = document.getElementById("info");
 
     const nextCycle = getNextCycleStart();
-    const diffToNext = Math.ceil(
-        (normalize(nextCycle) - normalize(date)) / 86400000
-    );
+    const diffToNext = Math.ceil((nextCycle - date) / 86400000);
 
     const diff = Math.floor(
         (normalize(date) - normalize(lastStart)) / 86400000
     ) + 1;
 
-    status.innerText = diff > 0 ? `День цикла ${diff}` : "До начала цикла";
+    status.innerText = `День цикла ${diff}`;
 
-    const ovulation = getOvulation(lastStart);
-    const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
-    const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
-    const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
-
-    if (diff < 1) {
+    if (diff < 0) {
         info.innerText = "До начала цикла";
-    } else if (isBetween(date, lastStart, periodEnd)) {
+    } else if (diff <= periodLength) {
         info.innerText = `Менструация 🩸\nДо следующего цикла: ${diffToNext} дн.`;
-    } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
+    } else if (diff === cycleLength - 14) {
         info.innerText = `Овуляция 💜\nДо следующего цикла: ${diffToNext} дн.`;
-    } else if (isBetween(date, fertileStart, fertileEnd)) {
-        info.innerText = `Фертильное окно 🌸\nДо следующего цикла: ${diffToNext} дн.`;
     } else {
         info.innerText = `Обычный день\nДо следующего цикла: ${diffToNext} дн.`;
     }
 }
 
+// ===== СЕЙВ =====
 function saveData() {
     const tg = window.Telegram.WebApp;
 
@@ -357,22 +371,28 @@ function saveData() {
     tg.close();
 }
 
+// ===== ДАННЫЕ ИЗ БОТА =====
 const params = new URLSearchParams(window.location.search);
 const data = params.get("data");
 
 if (data) {
-    const userData = JSON.parse(data);
+    try {
+        const userData = JSON.parse(decodeURIComponent(data));
 
-    cycleLength = userData.cycle_length;
-    periodLength = userData.period_length;
-    lastStart = new Date(userData.last_start);
+        cycleLength = userData.cycle_length ?? 28;
+        periodLength = userData.period_length ?? 5;
+        lastStart = new Date(userData.last_start);
 
-    if (userData.marked_days) {
-        selectedDays = userData.marked_days;
+        if (userData.marked_days) {
+            selectedDays = userData.marked_days;
+        }
+    } catch (error) {
+        console.error("Ошибка чтения data из URL:", error);
     }
 }
 
 render();
+
 </script>
 
 </body>
