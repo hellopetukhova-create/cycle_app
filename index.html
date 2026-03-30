@@ -144,6 +144,13 @@
       cursor: pointer;
       color: #222;
     }
+
+    .save-status {
+    margin: 12px 10px 20px;
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+    }
   </style>
 </head>
 
@@ -167,9 +174,10 @@
     <div class="small" id="info">Информация</div>
   </div>
 
-  <button class="save-btn" onclick="saveData()">Сохранить 🌸</button>
+  <div id="save-status" class="save-status">Изменений пока нет</div>
 
   <script>
+    let saveTimeout = null;
     let selectedDays = [];
     let current = new Date();
 
@@ -191,6 +199,13 @@
       const m = String(date.getMonth() + 1).padStart(2, "0");
       const d = String(date.getDate()).padStart(2, "0");
       return `${y}-${m}-${d}`;
+    }
+
+    function setSaveStatus(text) {
+    const statusEl = document.getElementById("save-status");
+    if (statusEl) {
+    statusEl.innerText = text;
+    }
     }
 
     function prevMonth() {
@@ -306,6 +321,7 @@
           }
 
           showInfo(date);
+          autoSave();
         };
 
         grid.appendChild(div);
@@ -345,16 +361,30 @@
       }
     }
 
-    function saveData() {
-      const tg = window.Telegram.WebApp;
+    function sendSave() {
+  const tg = window.Telegram.WebApp;
 
-      tg.sendData(JSON.stringify({
-        type: "save_cycle",
-        days: selectedDays
-      }));
+  try {
+    tg.sendData(JSON.stringify({
+      type: "save_cycle",
+      days: selectedDays
+    }));
 
-      tg.close();
-    }
+    setSaveStatus("Сохранено ✓");
+  } catch (error) {
+    console.error("Ошибка автосохранения:", error);
+    setSaveStatus("Ошибка сохранения");
+  }
+}
+
+    function autoSave() {
+    setSaveStatus("Сохраняю...");
+
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+    sendSave();
+    }, 800);
+}
 
     const params = new URLSearchParams(window.location.search);
     const data = params.get("data");
