@@ -546,29 +546,30 @@
     }
 
     const params = new URLSearchParams(window.location.search);
-    const data = params.get("data");
+  const data = params.get("data");
 
-    if (data) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(data));
+  if (data) {
+    try {
+      const userData = JSON.parse(decodeURIComponent(data));
 
-        cycleLength = userData.cycle_length ?? 28;
-        periodLength = userData.period_length ?? 5;
-        lastStart = userData.last_start
-          ? new Date(userData.last_start)
-          : new Date("2026-03-13");
-        selectedDays = Array.isArray(userData.marked_days)
-          ? userData.marked_days
-          : [];
+      cycleLength = userData.cycle_length ?? 28;
+      periodLength = userData.period_length ?? 5;
+      lastStart = userData.last_start
+        ? new Date(userData.last_start)
+        : new Date("2026-03-13");
 
-        saveToLocal();
-      } catch (error) {
-        console.error("Ошибка чтения data из URL:", error);
-        loadFromLocal();
-      }
-    } else {
+      selectedDays = Array.isArray(userData.marked_days)
+        ? userData.marked_days
+        : [];
+
+      saveToLocal();
+    } catch (error) {
+      console.error("Ошибка чтения data из URL:", error);
       loadFromLocal();
     }
+  } else {
+    loadFromLocal();
+  }
 
     render();
   </script>
