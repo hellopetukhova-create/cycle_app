@@ -12,15 +12,16 @@
 body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont;
-    background: linear-gradient(#fce4ec, #f8bbd0);
+    background: #ffffff;
 }
 
 /* HEADER */
 .header {
-    text-align: center;
-    padding: 20px;
-    font-weight: bold;
-    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    font-size: 18px;
 }
 
 /* CALENDAR */
@@ -29,6 +30,7 @@ body {
     border-radius: 20px;
     padding: 10px;
     margin: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .weekdays {
@@ -53,6 +55,7 @@ body {
     align-items: center;
     justify-content: center;
     background: #f5f5f5;
+    cursor: pointer;
 }
 
 /* STATES */
@@ -74,7 +77,7 @@ body {
     border: 2px solid black;
 }
 
-/* BOTTOM CARD */
+/* CARD */
 .card {
     background: white;
     border-radius: 20px;
@@ -89,6 +92,13 @@ body {
 
 .small {
     color: #777;
+}
+
+button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
 }
 </style>
 </head>
@@ -114,9 +124,16 @@ body {
     <div class="small" id="info">Информация</div>
 </div>
 
+<button onclick="saveData()">Сохранить 🌸</button>
+
 <script>
 let selectedDays = [];
 let current = new Date();
+
+// 👉 ГЛОБАЛЬНЫЕ (будут перезаписаны из бота)
+let cycleLength = 28;
+let periodLength = 5;
+let lastStart = new Date("2026-03-13");
 
 const monthNames = [
     "Январь","Февраль","Март","Апрель","Май","Июнь",
@@ -137,18 +154,10 @@ function getNextCycleStart() {
     return new Date(lastStart.getTime() + cycleLength * 86400000);
 }
 
-// 👉 ТВОИ ДАННЫЕ (потом подключим к боту)
-const cycleLength = 28;
-const periodLength = 5;
-const lastStart = new Date("2026-03-13");
-
-
-// расчет овуляции
 function getOvulation(start) {
     return new Date(start.getTime() + (cycleLength - 14) * 86400000);
 }
 
-// проверка диапазона
 function isBetween(date, start, end) {
     return date >= start && date <= end;
 }
@@ -156,7 +165,6 @@ function isBetween(date, start, end) {
 function render() {
     const grid = document.getElementById("grid");
     const month = document.getElementById("month");
-    const nextCycle = getNextCycleStart();
 
     grid.innerHTML = "";
 
@@ -172,6 +180,7 @@ function render() {
     const ovulation = getOvulation(lastStart);
     const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
     const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+    const nextCycle = getNextCycleStart();
 
     for (let i = 0; i < offset; i++) {
         grid.appendChild(document.createElement("div"));
@@ -183,12 +192,21 @@ function render() {
         div.classList.add("day");
         div.innerText = d;
 
+        const iso = date.toISOString().split("T")[0];
+
         // today
         if (date.toDateString() === new Date().toDateString()) {
             div.classList.add("today");
         }
+
+        // следующий цикл
         if (date.toDateString() === nextCycle.toDateString()) {
             div.style.border = "2px dashed #ff4d6d";
+        }
+
+        // сохранённые дни
+        if (selectedDays.includes(iso)) {
+            div.classList.add("period");
         }
 
         // менструация
@@ -202,24 +220,22 @@ function render() {
             div.classList.add("ovulation");
         }
 
-        // фертильные дни
+        // фертильные
         if (isBetween(date, fertileStart, fertileEnd)) {
             div.classList.add("fertile");
         }
 
         div.onclick = () => {
-    const iso = date.toISOString().split("T")[0];
+            if (selectedDays.includes(iso)) {
+                selectedDays = selectedDays.filter(d => d !== iso);
+                div.classList.remove("period");
+            } else {
+                selectedDays.push(iso);
+                div.classList.add("period");
+            }
 
-    if (selectedDays.includes(iso)) {
-        selectedDays = selectedDays.filter(d => d !== iso);
-        div.classList.remove("period");
-    } else {
-        selectedDays.push(iso);
-        div.classList.add("period");
-    }
-
-    showInfo(date);
-};
+            showInfo(date);
+        };
 
         grid.appendChild(div);
     }
@@ -228,10 +244,9 @@ function render() {
 function showInfo(date) {
     const status = document.getElementById("status");
     const info = document.getElementById("info");
+
     const nextCycle = getNextCycleStart();
     const diffToNext = Math.ceil((nextCycle - date) / 86400000);
-
-info.innerText += `\nДо следующего цикла: ${diffToNext} дн.`;
 
     const diff = Math.floor((date - lastStart) / 86400000) + 1;
 
@@ -240,12 +255,15 @@ info.innerText += `\nДо следующего цикла: ${diffToNext} дн.`;
     if (diff < 0) {
         info.innerText = "До начала цикла";
     } else if (diff <= periodLength) {
-        info.innerText = "Менструация 🩸";
+        info.innerText = `Менструация 🩸\nДо следующего цикла: ${diffToNext} дн.`;
     } else if (diff === cycleLength - 14) {
-        info.innerText = "Овуляция 💜";
+        info.innerText = `Овуляция 💜\nДо следующего цикла: ${diffToNext} дн.`;
     } else {
-        info.innerText = "Обычный день";
+        info.innerText = `Обычный день\nДо следующего цикла: ${diffToNext} дн.`;
     }
+}
+
+// 👉 Сохранение в бот
 function saveData() {
     const tg = window.Telegram.WebApp;
 
@@ -256,10 +274,25 @@ function saveData() {
 
     tg.close();
 }
+
+// 👉 Получение данных из бота
+const params = new URLSearchParams(window.location.search);
+const data = params.get("data");
+
+if (data) {
+    const userData = JSON.parse(data);
+
+    cycleLength = userData.cycle_length;
+    periodLength = userData.period_length;
+    lastStart = new Date(userData.last_start);
+
+    if (userData.marked_days) {
+        selectedDays = userData.marked_days;
+    }
 }
+
 render();
 </script>
-<button onclick="saveData()">Сохранить 🌸</button>
 
 </body>
 </html>
