@@ -133,10 +133,23 @@
     }
 
     .save-status {
-      margin: 12px 10px 20px;
+      margin: 12px 10px 10px;
       font-size: 14px;
       color: #888;
       text-align: center;
+    }
+
+    .save-btn {
+      display: block;
+      width: calc(100% - 20px);
+      margin: 0 10px 20px;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 16px;
+      background: #111;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
     }
 
     .modal {
@@ -202,7 +215,8 @@
     <div class="small" id="info">Информация</div>
   </div>
 
-  <div id="save-status" class="save-status">Изменений пока нет</div>
+  <div id="save-status" class="save-status">Локально сохранено</div>
+  <button class="save-btn" onclick="sendSave()">Сохранить в бот 🌸</button>
 
   <div id="day-modal" class="modal hidden">
     <div class="modal-box">
@@ -216,7 +230,6 @@
   <script>
     let selectedDays = [];
     let current = new Date();
-    let saveTimeout = null;
     let modalDate = null;
     let pressTimer = null;
 
@@ -242,8 +255,33 @@
 
     function setSaveStatus(text) {
       const statusEl = document.getElementById("save-status");
-      if (statusEl) {
-        statusEl.innerText = text;
+      if (statusEl) statusEl.innerText = text;
+    }
+
+    function saveToLocal() {
+      const state = {
+        selectedDays,
+        lastStart: formatISO(lastStart),
+        cycleLength,
+        periodLength
+      };
+
+      localStorage.setItem("cycleAppState", JSON.stringify(state));
+      setSaveStatus("Локально сохранено ✓");
+    }
+
+    function loadFromLocal() {
+      const raw = localStorage.getItem("cycleAppState");
+      if (!raw) return;
+
+      try {
+        const state = JSON.parse(raw);
+        selectedDays = Array.isArray(state.selectedDays) ? state.selectedDays : [];
+        cycleLength = state.cycleLength ?? cycleLength;
+        periodLength = state.periodLength ?? periodLength;
+        lastStart = state.lastStart ? new Date(state.lastStart) : lastStart;
+      } catch (error) {
+        console.error("Ошибка чтения localStorage:", error);
       }
     }
 
@@ -263,9 +301,9 @@
       lastStart = new Date(modalDate);
       selectedDays = [];
 
+      saveToLocal();
       render();
       showInfo(modalDate);
-      autoSave();
       closeModal();
     }
 
@@ -273,14 +311,13 @@
       if (!modalDate) return;
 
       const iso = formatISO(modalDate);
-
       if (!selectedDays.includes(iso)) {
         selectedDays.push(iso);
       }
 
+      saveToLocal();
       render();
       showInfo(modalDate);
-      autoSave();
       closeModal();
     }
 
@@ -290,9 +327,9 @@
       const iso = formatISO(modalDate);
       selectedDays = selectedDays.filter(day => day !== iso);
 
+      saveToLocal();
       render();
       showInfo(modalDate);
-      autoSave();
       closeModal();
     }
 
@@ -471,20 +508,11 @@
           last_start: formatISO(lastStart)
         }));
 
-        setSaveStatus("Сохранено ✓");
+        setSaveStatus("Отправлено в бот ✓");
       } catch (error) {
-        console.error("Ошибка автосохранения:", error);
-        setSaveStatus("Ошибка сохранения");
+        console.error("Ошибка отправки в бот:", error);
+        setSaveStatus("Ошибка отправки");
       }
-    }
-
-    function autoSave() {
-      setSaveStatus("Сохраняю...");
-
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
-        sendSave();
-      }, 800);
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -503,6 +531,7 @@
       }
     }
 
+    loadFromLocal();
     render();
   </script>
 </body>
