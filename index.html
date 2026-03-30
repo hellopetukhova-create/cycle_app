@@ -498,22 +498,26 @@
       }
     }
 
-    function sendSave() {
-      const tg = window.Telegram.WebApp;
+function sendSave() {
+  const tg = window.Telegram.WebApp;
 
-      try {
-        tg.sendData(JSON.stringify({
-          type: "save_cycle",
-          days: selectedDays,
-          last_start: formatISO(lastStart)
-        }));
+  try {
+    tg.sendData(JSON.stringify({
+      type: "save_cycle",
+      days: selectedDays,
+      last_start: formatISO(lastStart)
+    }));
 
-        setSaveStatus("Отправлено в бот ✓");
-      } catch (error) {
-        console.error("Ошибка отправки в бот:", error);
-        setSaveStatus("Ошибка отправки");
-      }
-    }
+    setSaveStatus("Отправлено в бот ✓");
+
+    setTimeout(() => {
+      tg.close();
+    }, 300);
+  } catch (error) {
+    console.error("Ошибка отправки в бот:", error);
+    setSaveStatus("Ошибка отправки");
+  }
+}
 
     const params = new URLSearchParams(window.location.search);
     const data = params.get("data");
