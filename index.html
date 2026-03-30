@@ -124,19 +124,6 @@
       line-height: 1.4;
     }
 
-    .save-btn {
-      display: block;
-      width: calc(100% - 20px);
-      margin: 12px 10px 20px;
-      padding: 14px 16px;
-      border: none;
-      border-radius: 16px;
-      background: #111;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
     .nav-btn {
       background: none;
       border: none;
@@ -146,51 +133,52 @@
     }
 
     .save-status {
-    margin: 12px 10px 20px;
-    font-size: 14px;
-    color: #888;
-    text-align: center;
+      margin: 12px 10px 20px;
+      font-size: 14px;
+      color: #888;
+      text-align: center;
     }
+
     .modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.18);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 1000;
-}
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.18);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+    }
 
-.hidden {
-  display: none;
-}
+    .hidden {
+      display: none;
+    }
 
-.modal-box {
-  width: calc(100% - 24px);
-  max-width: 420px;
-  background: #f7f7f7;
-  border-radius: 20px 20px 0 0;
-  overflow: hidden;
-  margin-bottom: 0;
-}
+    .modal-box {
+      width: calc(100% - 24px);
+      max-width: 420px;
+      background: #f7f7f7;
+      border-radius: 20px 20px 0 0;
+      overflow: hidden;
+      margin-bottom: 0;
+    }
 
-.modal-action,
-.modal-cancel {
-  width: 100%;
-  background: white;
-  border: none;
-  border-bottom: 1px solid #ececec;
-  padding: 18px 16px;
-  font-size: 20px;
-  color: #007aff;
-  cursor: pointer;
-}
+    .modal-action,
+    .modal-cancel {
+      width: 100%;
+      background: white;
+      border: none;
+      border-bottom: 1px solid #ececec;
+      padding: 18px 16px;
+      font-size: 20px;
+      color: #007aff;
+      cursor: pointer;
+    }
 
-.modal-cancel {
-  margin-top: 8px;
-  border-bottom: none;
-  font-weight: 500;
-}
+    .modal-cancel {
+      margin-top: 8px;
+      border-bottom: none;
+      font-weight: 500;
+    }
   </style>
 </head>
 
@@ -217,20 +205,20 @@
   <div id="save-status" class="save-status">Изменений пока нет</div>
 
   <div id="day-modal" class="modal hidden">
-  <div class="modal-box">
-    <button class="modal-action" onclick="setCycleStart()">Сделать началом цикла</button>
-    <button class="modal-action" onclick="markPeriodDay()">Отметить день менструации</button>
-    <button class="modal-action" onclick="removePeriodDay()">Убрать отметку</button>
-    <button class="modal-cancel" onclick="closeModal()">Отмена</button>
+    <div class="modal-box">
+      <button class="modal-action" onclick="setCycleStart()">Сделать началом цикла</button>
+      <button class="modal-action" onclick="markPeriodDay()">Отметить день менструации</button>
+      <button class="modal-action" onclick="removePeriodDay()">Убрать отметку</button>
+      <button class="modal-cancel" onclick="closeModal()">Отмена</button>
+    </div>
   </div>
-</div>
 
   <script>
-    let modalDate = null;
-    let pressTimer = null;
-    let saveTimeout = null;
     let selectedDays = [];
     let current = new Date();
+    let saveTimeout = null;
+    let modalDate = null;
+    let pressTimer = null;
 
     let cycleLength = 28;
     let periodLength = 5;
@@ -253,62 +241,61 @@
     }
 
     function setSaveStatus(text) {
-    const statusEl = document.getElementById("save-status");
-    if (statusEl) {
-    statusEl.innerText = text;
+      const statusEl = document.getElementById("save-status");
+      if (statusEl) {
+        statusEl.innerText = text;
+      }
     }
-    }
+
     function openModal(date) {
-  modalDate = date;
-  document.getElementById("day-modal").classList.remove("hidden");
-}
+      modalDate = date;
+      document.getElementById("day-modal").classList.remove("hidden");
+    }
+
     function closeModal() {
       modalDate = null;
       document.getElementById("day-modal").classList.add("hidden");
     }
+
     function setCycleStart() {
-    if (!modalDate) return;
+      if (!modalDate) return;
 
-    lastStart = new Date(modalDate);
+      lastStart = new Date(modalDate);
+      selectedDays = [];
 
-    const startIso = formatISO(modalDate);
-
-    if (!selectedDays.includes(startIso)) {
-      selectedDays.push(startIso);
+      render();
+      showInfo(modalDate);
+      autoSave();
+      closeModal();
     }
 
-  render();
-  showInfo(modalDate);
-  autoSave();
-  closeModal();
-}
+    function markPeriodDay() {
+      if (!modalDate) return;
 
-function markPeriodDay() {
-  if (!modalDate) return;
+      const iso = formatISO(modalDate);
 
-  const iso = formatISO(modalDate);
+      if (!selectedDays.includes(iso)) {
+        selectedDays.push(iso);
+      }
 
-  if (!selectedDays.includes(iso)) {
-    selectedDays.push(iso);
-  }
+      render();
+      showInfo(modalDate);
+      autoSave();
+      closeModal();
+    }
 
-  render();
-  showInfo(modalDate);
-  autoSave();
-  closeModal();
-}
+    function removePeriodDay() {
+      if (!modalDate) return;
 
-function removePeriodDay() {
-  if (!modalDate) return;
+      const iso = formatISO(modalDate);
+      selectedDays = selectedDays.filter(day => day !== iso);
 
-  const iso = formatISO(modalDate);
-  selectedDays = selectedDays.filter(day => day !== iso);
+      render();
+      showInfo(modalDate);
+      autoSave();
+      closeModal();
+    }
 
-  render();
-  showInfo(modalDate);
-  autoSave();
-  closeModal();
-}
     function prevMonth() {
       current.setMonth(current.getMonth() - 1);
       render();
@@ -406,36 +393,36 @@ function removePeriodDay() {
         }
 
         div.addEventListener("click", () => {
-  showInfo(date);
-});
+          showInfo(date);
+        });
 
-div.addEventListener("touchstart", () => {
-  pressTimer = setTimeout(() => {
-    openModal(date);
-  }, 500);
-});
+        div.addEventListener("touchstart", () => {
+          pressTimer = setTimeout(() => {
+            openModal(date);
+          }, 500);
+        });
 
-div.addEventListener("touchend", () => {
-  clearTimeout(pressTimer);
-});
+        div.addEventListener("touchend", () => {
+          clearTimeout(pressTimer);
+        });
 
-div.addEventListener("mousedown", () => {
-  pressTimer = setTimeout(() => {
-    openModal(date);
-  }, 500);
-});
+        div.addEventListener("mousedown", () => {
+          pressTimer = setTimeout(() => {
+            openModal(date);
+          }, 500);
+        });
 
-div.addEventListener("mouseup", () => {
-  clearTimeout(pressTimer);
-});
+        div.addEventListener("mouseup", () => {
+          clearTimeout(pressTimer);
+        });
 
-div.addEventListener("mouseleave", () => {
-  clearTimeout(pressTimer);
-});
+        div.addEventListener("mouseleave", () => {
+          clearTimeout(pressTimer);
+        });
 
-div.addEventListener("dblclick", () => {
-  openModal(date);
-});
+        div.addEventListener("dblclick", () => {
+          openModal(date);
+        });
 
         grid.appendChild(div);
       }
@@ -475,29 +462,30 @@ div.addEventListener("dblclick", () => {
     }
 
     function sendSave() {
-  const tg = window.Telegram.WebApp;
+      const tg = window.Telegram.WebApp;
 
-  try {
-    tg.sendData(JSON.stringify({
-      type: "save_cycle",
-      days: selectedDays
-    }));
+      try {
+        tg.sendData(JSON.stringify({
+          type: "save_cycle",
+          days: selectedDays,
+          last_start: formatISO(lastStart)
+        }));
 
-    setSaveStatus("Сохранено ✓");
-  } catch (error) {
-    console.error("Ошибка автосохранения:", error);
-    setSaveStatus("Ошибка сохранения");
-  }
-}
+        setSaveStatus("Сохранено ✓");
+      } catch (error) {
+        console.error("Ошибка автосохранения:", error);
+        setSaveStatus("Ошибка сохранения");
+      }
+    }
 
     function autoSave() {
-    setSaveStatus("Сохраняю...");
+      setSaveStatus("Сохраняю...");
 
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-    sendSave();
-    }, 800);
-}
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        sendSave();
+      }, 800);
+    }
 
     const params = new URLSearchParams(window.location.search);
     const data = params.get("data");
