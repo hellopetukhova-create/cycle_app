@@ -313,6 +313,8 @@
       if (!modalDate) return;
 
       lastStart = new Date(modalDate);
+
+      // при смене старта очищаем только ручные отметки
       selectedDays = [];
 
       saveToLocal();
@@ -325,6 +327,7 @@
       if (!modalDate) return;
 
       const iso = formatISO(modalDate);
+
       if (!selectedDays.includes(iso)) {
         selectedDays.push(iso);
       }
@@ -339,6 +342,7 @@
       if (!modalDate) return;
 
       const iso = formatISO(modalDate);
+
       selectedDays = selectedDays.filter(day => day !== iso);
 
       saveToLocal();
@@ -369,113 +373,124 @@
       return normalize(date) >= normalize(start) && normalize(date) <= normalize(end);
     }
 
-    function render() {
-      const grid = document.getElementById("grid");
-      const month = document.getElementById("month");
+  function render() {
+  const grid = document.getElementById("grid");
+  const month = document.getElementById("month");
 
-      grid.innerHTML = "";
+  grid.innerHTML = "";
 
-      const year = current.getFullYear();
-      const m = current.getMonth();
+  const year = current.getFullYear();
+  const m = current.getMonth();
 
-      month.innerText = `${monthNames[m]} ${year}`;
+  month.innerText = `${monthNames[m]} ${year}`;
 
-      const firstDay = new Date(year, m, 1).getDay();
-      const offset = firstDay === 0 ? 6 : firstDay - 1;
-      const daysInMonth = new Date(year, m + 1, 0).getDate();
+  const firstDay = new Date(year, m, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(year, m + 1, 0).getDate();
 
-      const ovulation = getOvulation(lastStart);
-      const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
-      const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
-      const nextCycle = getNextCycleStart();
-      const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
+  const ovulation = getOvulation(lastStart);
+  const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+  const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+  const nextCycle = getNextCycleStart();
+  const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
 
-      for (let i = 0; i < offset; i++) {
-        grid.appendChild(document.createElement("div"));
-      }
+  for (let i = 0; i < offset; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
 
-      for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(year, m, d);
-        const div = document.createElement("div");
-        div.classList.add("day");
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, m, d);
+    const div = document.createElement("div");
+    div.classList.add("day");
 
-        const diff = Math.floor(
-          (normalize(date) - normalize(lastStart)) / 86400000
-        );
+    const diff = Math.floor(
+      (normalize(date) - normalize(lastStart)) / 86400000
+    );
 
-        let cycleDay = null;
-        if (diff >= 0) {
-          cycleDay = (diff % cycleLength) + 1;
-        }
-
-        div.innerHTML = `
-          <div class="day-number">${d}</div>
-          ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
-          <div class="cycle-dot normal"></div>
-        `;
-
-        const dot = div.querySelector(".cycle-dot");
-        const iso = formatISO(date);
-
-        let baseStatus = "normal";
-
-        if (isBetween(date, lastStart, periodEnd)) {
-          baseStatus = "period";
-        } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
-          baseStatus = "ovulation";
-        } else if (isBetween(date, fertileStart, fertileEnd)) {
-          baseStatus = "fertile";
-        }
-
-        dot.className = `cycle-dot ${baseStatus}`;
-
-        if (selectedDays.includes(iso)) {
-          dot.className = "cycle-dot period";
-        }
-
-        if (normalize(date).getTime() === normalize(new Date()).getTime()) {
-          div.classList.add("today");
-        }
-
-        if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
-          div.style.border = "2px dashed #ff5c8a";
-        }
-
-        div.addEventListener("click", () => {
-          showInfo(date);
-        });
-
-        div.addEventListener("touchstart", () => {
-          pressTimer = setTimeout(() => {
-            openModal(date);
-          }, 500);
-        });
-
-        div.addEventListener("touchend", () => {
-          clearTimeout(pressTimer);
-        });
-
-        div.addEventListener("mousedown", () => {
-          pressTimer = setTimeout(() => {
-            openModal(date);
-          }, 500);
-        });
-
-        div.addEventListener("mouseup", () => {
-          clearTimeout(pressTimer);
-        });
-
-        div.addEventListener("mouseleave", () => {
-          clearTimeout(pressTimer);
-        });
-
-        div.addEventListener("dblclick", () => {
-          openModal(date);
-        });
-
-        grid.appendChild(div);
-      }
+    let cycleDay = null;
+    if (diff >= 0) {
+      cycleDay = (diff % cycleLength) + 1;
     }
+
+    div.innerHTML = `
+      <div class="day-number">${d}</div>
+      ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
+      <div class="cycle-dot normal"></div>
+    `;
+
+    const dot = div.querySelector(".cycle-dot");
+    const iso = formatISO(date);
+
+    // 1. базовый статус дня
+    let baseStatus = "normal";
+
+    if (isBetween(date, lastStart, periodEnd)) {
+      baseStatus = "period";
+    } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
+      baseStatus = "ovulation";
+    } else if (isBetween(date, fertileStart, fertileEnd)) {
+      baseStatus = "fertile";
+    }
+
+    // 2. сначала ставим базовый статус
+    dot.className = `cycle-dot ${baseStatus}`;
+    dot.dataset.baseStatus = baseStatus;
+
+    // 3. если день вручную отмечен — ручная отметка приоритетнее
+    if (selectedDays.includes(iso)) {
+      dot.className = "cycle-dot period";
+      dot.dataset.userSelected = "true";
+    } else {
+      dot.dataset.userSelected = "false";
+    }
+
+    // today
+    if (normalize(date).getTime() === normalize(new Date()).getTime()) {
+      div.classList.add("today");
+    }
+
+    // прогноз следующего цикла
+    if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
+      div.style.border = "2px dashed #ff5c8a";
+    }
+
+    // обычный тап = показать инфо
+    div.addEventListener("click", () => {
+      showInfo(date);
+    });
+
+    // долгий тап = открыть модалку
+    div.addEventListener("touchstart", () => {
+      pressTimer = setTimeout(() => {
+        openModal(date);
+      }, 500);
+    });
+
+    div.addEventListener("touchend", () => {
+      clearTimeout(pressTimer);
+    });
+
+    div.addEventListener("mousedown", () => {
+      pressTimer = setTimeout(() => {
+        openModal(date);
+      }, 500);
+    });
+
+    div.addEventListener("mouseup", () => {
+      clearTimeout(pressTimer);
+    });
+
+    div.addEventListener("mouseleave", () => {
+      clearTimeout(pressTimer);
+    });
+
+    div.addEventListener("dblclick", () => {
+      openModal(date);
+    });
+
+    grid.appendChild(div);
+  }
+}
 
     function showInfo(date) {
       const status = document.getElementById("status");
