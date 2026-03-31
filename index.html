@@ -101,13 +101,23 @@
       background: #ffd1dc;
     }
     .today-btn {
-      font-size: 14px;
-      font-weight: 600;
-      background: #111;
-      color: white;
-      border-radius: 999px;
-      padding: 8px 12px;
-    }
+  background: #f5f5f5;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.today-btn:active {
+  transform: scale(0.96);
+}
+
+.today-btn:hover {
+  background: #eeeeee;
+}
     .today {
       border: 2px solid #111;
     }
@@ -328,6 +338,13 @@
   filter: drop-shadow(0 2px 6px rgba(255, 192, 203, 0.18));
 }
 
+.today-row {
+  display: flex;
+  justify-content: center;
+  margin-top: -5px;
+  margin-bottom: 5px;
+}
+
 @keyframes fallFlower {
   0% {
     transform: translate3d(0, -80px, 0) rotate(0deg) scale(0.9);
@@ -356,6 +373,131 @@
     opacity: 0;
   }
 }
+  .stats-card {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  margin: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.stats-title {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.stats-item {
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.stats-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.stats-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.cycle-chart {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 140px;
+}
+
+.chart-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 10px 10px 6px 6px;
+  background: linear-gradient(180deg, #ff9db7 0%, #ff5c8a 100%);
+  min-height: 8px;
+  transition: height 0.25s ease;
+}
+
+.chart-bar-label {
+  font-size: 11px;
+  color: #888;
+  margin-top: 8px;
+}
+
+.chart-bar-value {
+  font-size: 11px;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+/* Стиль ПЕРЕКЛЮЧАТЕЛЬ МЕСЯЦ/ГОД */
+.segmented-control {
+  position: relative;
+  display: flex;
+  margin: 10px;
+  background: #f3f3f3;
+  border-radius: 16px;
+  padding: 4px;
+}
+
+.segment {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #777;
+  z-index: 2;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.segment.active {
+  color: #111;
+}
+
+.segment-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: white;
+  border-radius: 12px;
+  transition: transform 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.segment-bg {
+  transition: transform 0.25s ease, box-shadow 0.2s ease;
+}
   </style>
 </head>
 
@@ -363,16 +505,20 @@
   <div id="petal-rain" class="petal-rain"></div>
 
   <div class="header">
+    <div class="today-row">
+    <button class="today-btn" onclick="goToday()">Сегодня</button>
+    </div>
     <button class="nav-btn" onclick="prevMonth()">←</button>
     <div id="month"></div>
-    <button class="nav-btn today-btn" onclick="goToday()">Сегодня</button>
     <button class="nav-btn" onclick="nextMonth()">→</button>
   </div>
 
-  <div class="view-switch">
-    <button id="month-view-btn" class="view-btn active" onclick="setViewMode('month')">Месяц</button>
-    <button id="year-view-btn" class="view-btn" onclick="setViewMode('year')">Год</button>
-  </div>
+<!-- Переключатель МЕСЯЦ/ГОД -->
+  <div class="segmented-control">
+    <div class="segment" id="month-segment" onclick="setViewMode('month')">Месяц</div>
+    <div class="segment" id="year-segment" onclick="setViewMode('year')">Год</div>
+    <div class="segment-bg" id="segment-bg"></div>
+</div>
 
   <div class="calendar">
     <div class="weekdays">
@@ -392,7 +538,30 @@
     <div class="big" id="status">День цикла</div>
     <div class="small" id="info">Информация</div>
   </div>
+  
+  <div class="stats-card">
+  <div class="stats-title">Статистика</div>
 
+  <div class="stats-summary">
+    <div class="stats-item">
+      <div class="stats-value" id="avg-cycle">—</div>
+      <div class="stats-label">Средний цикл</div>
+    </div>
+
+    <div class="stats-item">
+      <div class="stats-value" id="avg-period">—</div>
+      <div class="stats-label">Средняя менструация</div>
+    </div>
+
+    <div class="stats-item">
+      <div class="stats-value" id="cycles-count">—</div>
+      <div class="stats-label">Циклов</div>
+    </div>
+  </div>
+
+  <div class="chart-title">Длина последних циклов</div>
+  <div id="cycle-chart" class="cycle-chart"></div>
+</div>
   <div id="save-status" class="save-status">Локально сохранено</div>
   <button class="save-btn" onclick="sendSave()">Сохранить в бот 🌸</button>
 
@@ -423,6 +592,7 @@
     let cycleLength = 28;
     let periodLength = 5;
     let lastStart = new Date("2026-03-13");
+    let cyclesHistory = [];
 
     const monthNames = [
       "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -522,7 +692,8 @@
         lastStart: formatISO(lastStart),
         cycleLength,
         periodLength,
-        viewMode
+        viewMode,
+        cyclesHistory
       };
       localStorage.setItem("cycleAppState", JSON.stringify(state));
       setSaveStatus("Отправлено в бот 💌");
@@ -539,6 +710,7 @@
         periodLength = state.periodLength ?? periodLength;
         lastStart = state.lastStart ? new Date(state.lastStart) : lastStart;
         viewMode = state.viewMode ?? "month";
+        cyclesHistory = Array.isArray(state.cyclesHistory) ? state.cyclesHistory : [];
       } catch (error) {
         console.error("Ошибка чтения localStorage:", error);
       }
@@ -554,30 +726,39 @@
       document.getElementById("day-modal").classList.add("hidden");
     }
 
-    function setViewMode(mode) {
-      viewMode = mode;
+// ==== Function ПЕРЕКЛЮЧАТЕЛЬ МЕСЯЦ/ГОД ====    
+function setViewMode(mode) {
+  viewMode = mode;
 
-    const calendar = document.querySelector(".calendar");
-    const yearView = document.getElementById("year-view");
-    const monthBtn = document.getElementById("month-view-btn");
-    const yearBtn = document.getElementById("year-view-btn");
+  const calendar = document.querySelector(".calendar");
+  const yearView = document.getElementById("year-view");
 
-    if (mode === "month") {
-      calendar.classList.remove("hidden");
-      yearView.classList.add("hidden");
-      monthBtn.classList.add("active");
-      yearBtn.classList.remove("active");
-    } else {
-      calendar.classList.add("hidden");
-      yearView.classList.remove("hidden");
-      monthBtn.classList.remove("active");
-      yearBtn.classList.add("active");
+  const monthBtn = document.getElementById("month-segment");
+  const yearBtn = document.getElementById("year-segment");
+  const bg = document.getElementById("segment-bg");
 
-      renderYear();
-    }
+  if (mode === "month") {
+    calendar.classList.remove("hidden");
+    yearView.classList.add("hidden");
 
-    saveToLocal();
+    monthBtn.classList.add("active");
+    yearBtn.classList.remove("active");
+
+    bg.style.transform = "translateX(0%)";
+  } else {
+    calendar.classList.add("hidden");
+    yearView.classList.remove("hidden");
+
+    monthBtn.classList.remove("active");
+    yearBtn.classList.add("active");
+
+    bg.style.transform = "translateX(100%)";
+
+    renderYear();
   }
+
+  saveToLocal();
+}
     
 
     function setCycleStart() {
@@ -586,8 +767,27 @@
       lastStart = new Date(modalDate);
       selectedDays = [];
 
+      const newStart = formatISO(lastStart);
+
+      if (!Array.isArray(cyclesHistory)) {
+        cyclesHistory = [];
+      }
+
+      const exists = cyclesHistory.some(item => item?.start_date === newStart);
+
+      if (!exists) {
+        cyclesHistory.push({
+          start_date: newStart,
+          period_length: periodLength,
+          cycle_length: cycleLength
+        });
+
+        cyclesHistory.sort((a, b) => a.start_date.localeCompare(b.start_date));
+      }
+
       saveToLocal();
       render();
+      renderStats();
       showInfo(modalDate);
       closeModal();
     }
@@ -832,6 +1032,9 @@
       selectedDays = Array.isArray(userData.marked_days)
         ? userData.marked_days
         : [];
+      cyclesHistory = Array.isArray(userData.cycles_history)
+        ? userData.cycles_history
+        : [];
 
       saveToLocal();
     } catch (error) {
@@ -851,6 +1054,7 @@
 
     localStorage.removeItem("cycleAppState");
     render();
+    renderStats();
     setViewMode(viewMode);
     launchFlowerRain();
   
@@ -898,6 +1102,107 @@
     monthBlock.appendChild(grid);
     yearView.appendChild(monthBlock);
   }
+}
+
+function getSortedHistoryDates() {
+  if (!Array.isArray(cyclesHistory)) return [];
+
+  return cyclesHistory
+    .map(item => item?.start_date)
+    .filter(Boolean)
+    .map(dateStr => new Date(dateStr))
+    .sort((a, b) => a - b);
+}
+
+function getCycleLengthsFromHistory() {
+  const dates = getSortedHistoryDates();
+  const lengths = [];
+
+  for (let i = 1; i < dates.length; i++) {
+    const diffDays = Math.round(
+      (normalize(dates[i]) - normalize(dates[i - 1])) / 86400000
+    );
+
+    if (diffDays > 0 && diffDays < 60) {
+      lengths.push(diffDays);
+    }
+  }
+
+  return lengths;
+}
+
+function getAverageCycleLength() {
+  const lengths = getCycleLengthsFromHistory();
+  if (!lengths.length) return cycleLength;
+
+  const avg = lengths.reduce((sum, value) => sum + value, 0) / lengths.length;
+  return Math.round(avg);
+}
+
+function getAveragePeriodLength() {
+  if (!Array.isArray(cyclesHistory) || !cyclesHistory.length) {
+    return periodLength;
+  }
+
+  const values = cyclesHistory
+    .map(item => item?.period_length)
+    .filter(value => Number.isFinite(value) && value > 0);
+
+  if (!values.length) return periodLength;
+
+  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return Math.round(avg);
+}
+
+function renderStats() {
+  const avgCycleEl = document.getElementById("avg-cycle");
+  const avgPeriodEl = document.getElementById("avg-period");
+  const cyclesCountEl = document.getElementById("cycles-count");
+  const chartEl = document.getElementById("cycle-chart");
+
+  if (!avgCycleEl || !avgPeriodEl || !cyclesCountEl || !chartEl) return;
+
+  const cycleLengths = getCycleLengthsFromHistory();
+  const avgCycle = getAverageCycleLength();
+  const avgPeriod = getAveragePeriodLength();
+  const count = Array.isArray(cyclesHistory) ? cyclesHistory.length : 0;
+
+  avgCycleEl.innerText = `${avgCycle}`;
+  avgPeriodEl.innerText = `${avgPeriod}`;
+  cyclesCountEl.innerText = `${count}`;
+
+  chartEl.innerHTML = "";
+
+  if (!cycleLengths.length) {
+    chartEl.innerHTML = `<div style="width:100%; text-align:center; color:#999; font-size:13px;">Пока мало данных для графика</div>`;
+    return;
+  }
+
+  const lastValues = cycleLengths.slice(-6);
+  const maxValue = Math.max(...lastValues, 1);
+
+  lastValues.forEach((value, index) => {
+    const wrap = document.createElement("div");
+    wrap.className = "chart-bar-wrap";
+
+    const val = document.createElement("div");
+    val.className = "chart-bar-value";
+    val.innerText = value;
+
+    const bar = document.createElement("div");
+    bar.className = "chart-bar";
+    bar.style.height = `${Math.max((value / maxValue) * 90, 12)}px`;
+
+    const label = document.createElement("div");
+    label.className = "chart-bar-label";
+    label.innerText = `#${cycleLengths.length - lastValues.length + index + 1}`;
+
+    wrap.appendChild(val);
+    wrap.appendChild(bar);
+    wrap.appendChild(label);
+
+    chartEl.appendChild(wrap);
+  });
 }
   </script>
 </body>
