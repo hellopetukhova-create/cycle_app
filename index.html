@@ -100,7 +100,14 @@
     .cycle-dot.fertile {
       background: #ffd1dc;
     }
-
+    .today-btn {
+      font-size: 14px;
+      font-weight: 600;
+      background: #111;
+      color: white;
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
     .today {
       border: 2px solid #111;
     }
@@ -358,7 +365,7 @@
   <div class="header">
     <button class="nav-btn" onclick="prevMonth()">←</button>
     <div id="month"></div>
-    <button class="nav-btn" onclick="goToday()">●</button>
+    <button class="nav-btn today-btn" onclick="goToday()">Сегодня</button>
     <button class="nav-btn" onclick="nextMonth()">→</button>
   </div>
 
@@ -841,7 +848,7 @@
     tg.HapticFeedback.impactOccurred(type);
   }
     current = new Date(lastStart.getFullYear(), lastStart.getMonth(), 1);
-    
+
     localStorage.removeItem("cycleAppState");
     render();
     setViewMode(viewMode);
