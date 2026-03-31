@@ -841,6 +841,8 @@
     tg.HapticFeedback.impactOccurred(type);
   }
     current = new Date(lastStart.getFullYear(), lastStart.getMonth(), 1);
+    
+    localStorage.removeItem("cycleAppState");
     render();
     setViewMode(viewMode);
     launchFlowerRain();
