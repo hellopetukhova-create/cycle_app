@@ -753,11 +753,6 @@
   color: #c9892f;
 }
 /* Стиль переключатель Главная */
-.top-switch {
-  display: flex;
-  gap: 8px;
-  margin: 10px;
-}
 
 .top-switch button {
   flex: 1;
@@ -979,7 +974,7 @@
 
   <!-- Кнопка сегодня -->
   <div class="today-row">
-    <button class="today-btn" onclick="goToToday()">Сегодня</button>
+    <button class="today-btn" onclick="goToday()">Сегодня</button>
   </div>
 
   <!-- Переключатель месяц/год -->
@@ -1093,26 +1088,6 @@
 
   const btnHome = document.getElementById("btn-home");
   const btnCalendar = document.getElementById("btn-calendar");
-
-      btnHome.onclick = () => {
-      homeScreen.style.display = "block";
-      calendarScreen.style.display = "none";
-
-      btnHome.classList.add("active");
-      btnCalendar.classList.remove("active");
-
-  renderTodayCard(new Date());
-};
-
-btnCalendar.onclick = () => {
-  homeScreen.style.display = "none";
-  calendarScreen.style.display = "block";
-
-  btnCalendar.classList.add("active");
-  btnHome.classList.remove("active");
-
-  render(); // календарь
-};
 
     const tg = window.Telegram?.WebApp;
 
@@ -1275,6 +1250,7 @@ btnCalendar.onclick = () => {
 
       try {
         const state = JSON.parse(raw);
+        showScreen(activeScreen);
         activeScreen = state.activeScreen ?? "home";
         selectedDays = Array.isArray(state.selectedDays) ? state.selectedDays : [];
         cycleLength = state.cycleLength ?? cycleLength;
