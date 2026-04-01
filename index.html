@@ -1776,31 +1776,29 @@ function setViewMode(mode) {
       showInfo(date);
     });
 
-    div.addEventListener(
-      "touchstart",
-      (e) => {
-        isDayPressing = true;
+    div.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
+      isDayPressing = true;
 
-        pressTimer = setTimeout(() => {
-          if (isDayPressing && !isDragging) {
-            e.preventDefault();
-            vibrate("medium");
-            openModal(date);
-          }
-        }, 500);
-      },
-      { passive: false }
-    );
+      pressTimer = setTimeout(() => {
+        if (isDayPressing) {
+          vibrate("medium");
+          openModal(date);
+        }
+      }, 450);
+    }, { passive: true });
 
-    div.addEventListener("touchmove", () => {
+    div.addEventListener("touchmove", (e) => {
+      e.stopPropagation();
       isDayPressing = false;
       clearTimeout(pressTimer);
-    });
+    }, { passive: true });
 
-    div.addEventListener("touchend", () => {
+    div.addEventListener("touchend", (e) => {
+      e.stopPropagation();
       isDayPressing = false;
       clearTimeout(pressTimer);
-    });
+    }, { passive: true });
 
     div.addEventListener("touchcancel", () => {
       isDayPressing = false;
@@ -1811,7 +1809,7 @@ function setViewMode(mode) {
       pressTimer = setTimeout(() => {
         vibrate("medium");
         openModal(date);
-      }, 500);
+      }, 450);
     });
 
     div.addEventListener("mouseup", () => {
