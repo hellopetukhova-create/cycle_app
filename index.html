@@ -933,6 +933,39 @@
   opacity: 1;
   transform: translateY(0);
 }
+/* Стиль для активного месяца */
+.year-month.current-month {
+  border: 1px solid #ece8ff;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.08);
+}
+
+.year-month.current-month .year-month-title {
+  color: #6c5ce7;
+}
+
+.year-month.clickable {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.year-month.clickable:active {
+  transform: scale(0.98);
+}
+/* Анимация Месяц/год */
+.view-anim {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.view-hidden {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.view-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 </style>
 </head>
 
@@ -1115,6 +1148,9 @@
       tg.ready();
       tg.expand();
     }
+
+    let touchStartX = 0;
+    let touchEndX = 0;
     let activeScreen = "home";
     let selectedDays = [];
     const now = new Date();
@@ -1181,6 +1217,23 @@ function showScreen(screen) {
 
   saveToLocal();
 }
+// ==== Обработчик свайпа ====
+function handleSwipe() {
+  const diff = touchStartX - touchEndX;
+
+  // чувствительность свайпа
+  const threshold = 40;
+
+  if (Math.abs(diff) < threshold) return;
+
+  if (diff > 0) {
+    // 👉 свайп влево
+    nextMonth();
+  } else {
+    // 👉 свайп вправо
+    prevMonth();
+  }
+}
 // ==== Падающие цветы на главной ====
     function createFlowerSVG(size = 28) {
   return `
@@ -1214,7 +1267,7 @@ function showScreen(screen) {
   `;
 }
 
-    function launchFlowerRain(count = 14) {
+  function launchFlowerRain(count = 14) {
   const container = document.getElementById("petal-rain");
   if (!container) return;
 
@@ -1323,24 +1376,66 @@ function setViewMode(mode) {
   const yearBtn = document.getElementById("year-segment");
   const bg = document.getElementById("segment-bg");
 
+  const cycleCard = document.querySelector(".card");
+  const fertilityCard = document.querySelector(".fertility-card");
+  const phaseCard = document.querySelector(".phase-card");
+
+  // добавляем базовый класс
+  calendar.classList.add("view-anim");
+  yearView.classList.add("view-anim");
+
   if (mode === "month") {
-    calendar.classList.remove("hidden");
-    yearView.classList.add("hidden");
+    // 👉 скрываем год
+    yearView.classList.remove("view-visible");
+    yearView.classList.add("view-hidden");
+
+    setTimeout(() => {
+      yearView.classList.add("hidden");
+      calendar.classList.remove("hidden");
+
+      calendar.classList.add("view-hidden");
+
+      requestAnimationFrame(() => {
+        calendar.classList.add("view-visible");
+        calendar.classList.remove("view-hidden");
+      });
+    }, 150);
+
+    cycleCard?.classList.remove("hidden");
+    fertilityCard?.classList.remove("hidden");
+    phaseCard?.classList.remove("hidden");
 
     monthBtn.classList.add("active");
     yearBtn.classList.remove("active");
 
     bg.style.transform = "translateX(0%)";
   } else {
-    calendar.classList.add("hidden");
-    yearView.classList.remove("hidden");
+    // 👉 скрываем месяц
+    calendar.classList.remove("view-visible");
+    calendar.classList.add("view-hidden");
+
+    setTimeout(() => {
+      calendar.classList.add("hidden");
+      yearView.classList.remove("hidden");
+
+      yearView.classList.add("view-hidden");
+
+      requestAnimationFrame(() => {
+        yearView.classList.add("view-visible");
+        yearView.classList.remove("view-hidden");
+      });
+
+      renderYear();
+    }, 150);
+
+    cycleCard?.classList.add("hidden");
+    fertilityCard?.classList.add("hidden");
+    phaseCard?.classList.add("hidden");
 
     monthBtn.classList.remove("active");
     yearBtn.classList.add("active");
 
     bg.style.transform = "translateX(100%)";
-
-    renderYear();
   }
 
   saveToLocal();
@@ -1902,16 +1997,36 @@ function renderPhaseCard(date = new Date()) {
     renderHomeScreen(new Date());
     setViewMode(viewMode);
     launchFlowerRain();
+    
+// ==== Навесила события на календарь ====
+const calendarEl = document.querySelector(".calendar");
+if (calendarEl) {
+  calendarEl.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+
+  calendarEl.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  });
+}
   
-  function renderYear() {
+function renderYear() {
   const yearView = document.getElementById("year-view");
   yearView.innerHTML = "";
 
   const year = current.getFullYear();
+  const today = new Date();
+  const currentMonthIndex = today.getMonth();
+  const currentYear = today.getFullYear();
 
   for (let m = 0; m < 12; m++) {
     const monthBlock = document.createElement("div");
-    monthBlock.classList.add("year-month");
+    monthBlock.classList.add("year-month", "clickable");
+
+    if (year === currentYear && m === currentMonthIndex) {
+      monthBlock.classList.add("current-month");
+    }
 
     const title = document.createElement("div");
     title.classList.add("year-month-title");
@@ -1942,6 +2057,13 @@ function renderPhaseCard(date = new Date()) {
 
       grid.appendChild(dot);
     }
+
+    monthBlock.addEventListener("click", () => {
+      current = new Date(year, m, 1);
+      setViewMode("month");
+      render();
+      showInfo(new Date(year, m, 1));
+    });
 
     monthBlock.appendChild(title);
     monthBlock.appendChild(grid);
