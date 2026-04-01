@@ -1287,6 +1287,8 @@ document.addEventListener("selectionchange", () => {
     let currentTranslateX = 0;
     let touchStartTime = 0;
     let isDayPressing = false;
+    let touchStartY = 0;
+    let isHorizontalSwipe = false;
 
     let activeScreen = "home";
     let selectedDays = [];
@@ -2155,6 +2157,7 @@ function renderPhaseCard(date = new Date()) {
     renderHomeScreen(new Date());
     setViewMode(viewMode);
     launchFlowerRain();
+    showScreen(activeScreen);
 
 // ==== Навесила события на календарь ====
 const calendarEl = document.querySelector(".calendar");
@@ -2164,32 +2167,65 @@ if (calendarEl) {
     if (viewMode !== "month") return;
 
     isDragging = true;
+    isHorizontalSwipe = false;
+
     touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
     touchStartTime = Date.now();
 
+    currentTranslateX = 0;
     calendarEl.style.transition = "none";
-  });
+  }, { passive: true });
 
   calendarEl.addEventListener("touchmove", (e) => {
     if (!isDragging) return;
 
     const currentX = e.touches[0].clientX;
-    const diff = currentX - touchStartX;
+    const currentY = e.touches[0].clientY;
 
-    currentTranslateX = diff;
-    calendarEl.style.transform = `translateX(${diff}px)`;
-  });
+    const diffX = currentX - touchStartX;
+    const diffY = currentY - touchStartY;
+
+    // Если жест вертикальный — не трогаем календарь
+    if (!isHorizontalSwipe) {
+      if (Math.abs(diffY) > Math.abs(diffX)) {
+        isDragging = false;
+        calendarEl.style.transition = "transform 0.2s ease";
+        calendarEl.style.transform = "translateX(0)";
+        currentTranslateX = 0;
+        return;
+      }
+
+      // Горизонтальный свайп считаем только если он реально выражен
+      if (Math.abs(diffX) > 8) {
+        isHorizontalSwipe = true;
+      } else {
+        return;
+      }
+    }
+
+    e.preventDefault();
+
+    currentTranslateX = diffX;
+    calendarEl.style.transform = `translateX(${diffX}px)`;
+  }, { passive: false });
 
   calendarEl.addEventListener("touchend", () => {
-    if (!isDragging) return;
+    if (!isHorizontalSwipe) {
+      isDragging = false;
+      currentTranslateX = 0;
+      calendarEl.style.transition = "transform 0.2s ease";
+      calendarEl.style.transform = "translateX(0)";
+      return;
+    }
+
     isDragging = false;
 
     const duration = Date.now() - touchStartTime;
     const diff = currentTranslateX;
     const absDiff = Math.abs(diff);
 
-    const velocity = absDiff / duration;
-
+    const velocity = absDiff / Math.max(duration, 1);
     const distanceThreshold = 60;
     const velocityThreshold = 0.35;
 
@@ -2197,7 +2233,6 @@ if (calendarEl) {
 
     if (absDiff > distanceThreshold || velocity > velocityThreshold) {
       if (diff < 0) {
-        // 👉 влево
         calendarEl.style.transform = "translateX(-100%)";
 
         setTimeout(() => {
@@ -2211,7 +2246,6 @@ if (calendarEl) {
           });
         }, 200);
       } else {
-        // 👉 вправо
         calendarEl.style.transform = "translateX(100%)";
 
         setTimeout(() => {
@@ -2226,11 +2260,19 @@ if (calendarEl) {
         }, 200);
       }
     } else {
-      // 👉 возврат обратно
       calendarEl.style.transform = "translateX(0)";
     }
 
     currentTranslateX = 0;
+    isHorizontalSwipe = false;
+  });
+
+  calendarEl.addEventListener("touchcancel", () => {
+    isDragging = false;
+    isHorizontalSwipe = false;
+    currentTranslateX = 0;
+    calendarEl.style.transition = "transform 0.2s ease";
+    calendarEl.style.transform = "translateX(0)";
   });
 }
 function renderYear() {
