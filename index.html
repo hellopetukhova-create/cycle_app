@@ -965,6 +965,10 @@
   opacity: 1;
   transform: translateY(0);
 }
+.calendar {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
 
 </style>
 </head>
@@ -1151,6 +1155,9 @@
 
     let touchStartX = 0;
     let touchEndX = 0;
+    let isDragging = false;
+    let currentTranslateX = 0;
+
     let activeScreen = "home";
     let selectedDays = [];
     const now = new Date();
@@ -1218,19 +1225,25 @@ function showScreen(screen) {
   saveToLocal();
 }
 // ==== Обработчик свайпа ====
-function handleSwipe() {
+function handleSwipe(duration) {
+  if (viewMode !== "month") return;
+
   const diff = touchStartX - touchEndX;
+  const absDiff = Math.abs(diff);
 
-  // чувствительность свайпа
-  const threshold = 40;
+  const distanceThreshold = 40;   // расстояние
+  const velocityThreshold = 0.3;  // скорость
 
-  if (Math.abs(diff) < threshold) return;
+  const velocity = absDiff / duration;
+
+  const isFastSwipe = velocity > velocityThreshold;
+  const isLongSwipe = absDiff > distanceThreshold;
+
+  if (!isFastSwipe && !isLongSwipe) return;
 
   if (diff > 0) {
-    // 👉 свайп влево
     nextMonth();
   } else {
-    // 👉 свайп вправо
     prevMonth();
   }
 }
@@ -1997,20 +2010,84 @@ function renderPhaseCard(date = new Date()) {
     renderHomeScreen(new Date());
     setViewMode(viewMode);
     launchFlowerRain();
-    
+
 // ==== Навесила события на календарь ====
 const calendarEl = document.querySelector(".calendar");
+
 if (calendarEl) {
   calendarEl.addEventListener("touchstart", (e) => {
-    touchStartX = e.changedTouches[0].screenX;
+    if (viewMode !== "month") return;
+
+    isDragging = true;
+    touchStartX = e.touches[0].clientX;
+    touchStartTime = Date.now();
+
+    calendarEl.style.transition = "none";
   });
 
-  calendarEl.addEventListener("touchend", (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
+  calendarEl.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - touchStartX;
+
+    currentTranslateX = diff;
+    calendarEl.style.transform = `translateX(${diff}px)`;
+  });
+
+  calendarEl.addEventListener("touchend", () => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const duration = Date.now() - touchStartTime;
+    const diff = currentTranslateX;
+    const absDiff = Math.abs(diff);
+
+    const velocity = absDiff / duration;
+
+    const distanceThreshold = 60;
+    const velocityThreshold = 0.35;
+
+    calendarEl.style.transition = "transform 0.25s ease";
+
+    if (absDiff > distanceThreshold || velocity > velocityThreshold) {
+      if (diff < 0) {
+        // 👉 влево
+        calendarEl.style.transform = "translateX(-100%)";
+
+        setTimeout(() => {
+          nextMonth();
+          calendarEl.style.transition = "none";
+          calendarEl.style.transform = "translateX(100%)";
+
+          requestAnimationFrame(() => {
+            calendarEl.style.transition = "transform 0.25s ease";
+            calendarEl.style.transform = "translateX(0)";
+          });
+        }, 200);
+      } else {
+        // 👉 вправо
+        calendarEl.style.transform = "translateX(100%)";
+
+        setTimeout(() => {
+          prevMonth();
+          calendarEl.style.transition = "none";
+          calendarEl.style.transform = "translateX(-100%)";
+
+          requestAnimationFrame(() => {
+            calendarEl.style.transition = "transform 0.25s ease";
+            calendarEl.style.transform = "translateX(0)";
+          });
+        }, 200);
+      }
+    } else {
+      // 👉 возврат обратно
+      calendarEl.style.transform = "translateX(0)";
+    }
+
+    currentTranslateX = 0;
   });
 }
-  
 function renderYear() {
   const yearView = document.getElementById("year-view");
   yearView.innerHTML = "";
