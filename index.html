@@ -1055,10 +1055,6 @@ button,
   opacity: 1;
   transform: translateY(0);
 }
-.calendar {
-  transition: transform 0.25s ease;
-  will-change: transform;
-}
 
 </style>
 </head>
@@ -1796,17 +1792,37 @@ function setViewMode(mode) {
       showInfo(date);
     });
 
+let dayTouchStartX = 0;
+let dayTouchStartY = 0;
+
     div.addEventListener("touchstart", (e) => {
-      e.stopPropagation();
-      isDayPressing = true;
+      const t = e.touches[0];
+      dayTouchStartX = t.clientX;
+      dayTouchStartY = t.clientY;
 
       pressTimer = setTimeout(() => {
-        if (isDayPressing) {
-          vibrate("medium");
-          openModal(date);
-        }
-      }, 450);
+        vibrate("medium");
+        openModal(date);
+      }, 500);
     }, { passive: true });
+
+    div.addEventListener("touchmove", (e) => {
+      const t = e.touches[0];
+      const dx = Math.abs(t.clientX - dayTouchStartX);
+      const dy = Math.abs(t.clientY - dayTouchStartY);
+
+      if (dx > 10 || dy > 10) {
+        clearTimeout(pressTimer);
+      }
+    }, { passive: true });
+
+    div.addEventListener("touchend", () => {
+      clearTimeout(pressTimer);
+    });
+
+    div.addEventListener("touchcancel", () => {
+      clearTimeout(pressTimer);
+    });
 
     div.addEventListener("touchmove", (e) => {
       e.stopPropagation();
@@ -2162,110 +2178,45 @@ function renderPhaseCard(date = new Date()) {
 // ==== Навесила события на календарь ====
 const calendarEl = document.querySelector(".calendar");
 
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeStartTime = 0;
+
 if (calendarEl) {
   calendarEl.addEventListener("touchstart", (e) => {
     if (viewMode !== "month") return;
 
-    isDragging = true;
-    isHorizontalSwipe = false;
-
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-
-    currentTranslateX = 0;
-    calendarEl.style.transition = "none";
+    const t = e.touches[0];
+    swipeStartX = t.clientX;
+    swipeStartY = t.clientY;
+    swipeStartTime = Date.now();
   }, { passive: true });
 
-  calendarEl.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
+  calendarEl.addEventListener("touchend", (e) => {
+    if (viewMode !== "month") return;
 
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - swipeStartX;
+    const dy = t.clientY - swipeStartY;
+    const dt = Date.now() - swipeStartTime;
 
-    const diffX = currentX - touchStartX;
-    const diffY = currentY - touchStartY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const velocity = absX / Math.max(dt, 1);
 
-    // Если жест вертикальный — не трогаем календарь
-    if (!isHorizontalSwipe) {
-      if (Math.abs(diffY) > Math.abs(diffX)) {
-        isDragging = false;
-        calendarEl.style.transition = "transform 0.2s ease";
-        calendarEl.style.transform = "translateX(0)";
-        currentTranslateX = 0;
-        return;
-      }
+    // если жест больше вертикальный — считаем это обычным скроллом
+    if (absY > absX) return;
 
-      // Горизонтальный свайп считаем только если он реально выражен
-      if (Math.abs(diffX) > 8) {
-        isHorizontalSwipe = true;
-      } else {
-        return;
-      }
-    }
+    // свайп засчитываем либо по длине, либо по скорости
+    if (absX < 45 && velocity < 0.35) return;
 
-    e.preventDefault();
-
-    currentTranslateX = diffX;
-    calendarEl.style.transform = `translateX(${diffX}px)`;
-  }, { passive: false });
-
-  calendarEl.addEventListener("touchend", () => {
-    if (!isHorizontalSwipe) {
-      isDragging = false;
-      currentTranslateX = 0;
-      calendarEl.style.transition = "transform 0.2s ease";
-      calendarEl.style.transform = "translateX(0)";
-      return;
-    }
-
-    isDragging = false;
-
-    const duration = Date.now() - touchStartTime;
-    const diff = currentTranslateX;
-    const absDiff = Math.abs(diff);
-
-    const velocity = absDiff / Math.max(duration, 1);
-    const distanceThreshold = 60;
-    const velocityThreshold = 0.35;
-
-    calendarEl.style.transition = "transform 0.25s ease";
-
-    if (absDiff > distanceThreshold || velocity > velocityThreshold) {
-      if (diff < 0) {
-        calendarEl.style.transform = "translateX(-100%)";
-
-        setTimeout(() => {
-          nextMonth();
-          calendarEl.style.transition = "none";
-          calendarEl.style.transform = "translateX(100%)";
-
-          requestAnimationFrame(() => {
-            calendarEl.style.transition = "transform 0.25s ease";
-            calendarEl.style.transform = "translateX(0)";
-          });
-        }, 200);
-      } else {
-        calendarEl.style.transform = "translateX(100%)";
-
-        setTimeout(() => {
-          prevMonth();
-          calendarEl.style.transition = "none";
-          calendarEl.style.transform = "translateX(-100%)";
-
-          requestAnimationFrame(() => {
-            calendarEl.style.transition = "transform 0.25s ease";
-            calendarEl.style.transform = "translateX(0)";
-          });
-        }, 200);
-      }
+    if (dx < 0) {
+      nextMonth();
     } else {
-      calendarEl.style.transform = "translateX(0)";
+      prevMonth();
     }
-
-    currentTranslateX = 0;
-    isHorizontalSwipe = false;
-  });
+  }, { passive: true });
+}
 
   calendarEl.addEventListener("touchcancel", () => {
     isDragging = false;
@@ -2274,7 +2225,7 @@ if (calendarEl) {
     calendarEl.style.transition = "transform 0.2s ease";
     calendarEl.style.transform = "translateX(0)";
   });
-}
+
 function renderYear() {
   const yearView = document.getElementById("year-view");
   yearView.innerHTML = "";
