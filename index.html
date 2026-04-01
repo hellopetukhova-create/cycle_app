@@ -54,7 +54,16 @@ button {
   user-select: none;
   -webkit-touch-callout: none;
 }
-
+.day {
+  touch-action: manipulation;
+}
+.day,
+.day * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
 .day,
 button,
 .nav-btn,
@@ -1203,11 +1212,12 @@ button,
 window.addEventListener("scroll", () => {
   const header = document.querySelector(".top-switch");
   if (!header) return;
-  // На главной странице не делаем стеклянный sticky-эффект
-  if (activeScreen !==calendar){
-    header.classList.remove ("scrolled")
+
+  if (activeScreen !== "calendar") {
+    header.classList.remove("scrolled");
     return;
   }
+
   const scrollY = window.scrollY;
 
   if (scrollY > 10) {
@@ -1215,7 +1225,20 @@ window.addEventListener("scroll", () => {
   } else {
     header.classList.remove("scrolled");
   }
-});    
+});  
+// ==== Защита от системного выделения ====
+document.addEventListener("contextmenu", (e) => {
+  if (e.target.closest(".day")) {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener("selectionchange", () => {
+  const sel = window.getSelection?.();
+  if (sel && sel.rangeCount > 0) {
+    sel.removeAllRanges();
+  }
+});
 // ==== Переключение экранов ====
   const homeScreen = document.getElementById("home-screen");
   const calendarScreen = document.getElementById("calendar-screen");
@@ -1240,6 +1263,8 @@ window.addEventListener("scroll", () => {
     let touchEndX = 0;
     let isDragging = false;
     let currentTranslateX = 0;
+    let touchStartTime = 0;
+    let isDayPressing = false;
 
     let activeScreen = "home";
     let selectedDays = [];
@@ -1436,7 +1461,7 @@ function handleSwipe(duration) {
 
       try {
         const state = JSON.parse(raw);
-        showScreen(activeScreen);
+
         activeScreen = state.activeScreen ?? "home";
         selectedDays = Array.isArray(state.selectedDays) ? state.selectedDays : [];
         cycleLength = state.cycleLength ?? cycleLength;
@@ -1743,43 +1768,60 @@ function setViewMode(mode) {
           div.style.border = "2px dashed #ff5c8a";
         }
 
-        div.addEventListener("click", () => {
-          showInfo(date);
-        });
+    div.addEventListener("click", () => {
+      showInfo(date);
+    });
 
-        div.addEventListener("touchstart", (e) => {
-          e.preventDefault(); // 🚫 убираем системное выделение
+    div.addEventListener(
+      "touchstart",
+      (e) => {
+        isDayPressing = true;
 
-          pressTimer = setTimeout(() => {
+        pressTimer = setTimeout(() => {
+          if (isDayPressing && !isDragging) {
+            e.preventDefault();
             vibrate("medium");
             openModal(date);
-          }, 500);
-        });
+          }
+        }, 500);
+      },
+      { passive: false }
+    );
 
-        div.addEventListener("touchend", () => {
-          clearTimeout(pressTimer);
-        });
+    div.addEventListener("touchmove", () => {
+      isDayPressing = false;
+      clearTimeout(pressTimer);
+    });
 
-        div.addEventListener("mousedown", () => {
-          pressTimer = setTimeout(() => {
-            vibrate("medium");
-            openModal(date);
-          }, 500);
-        });
+    div.addEventListener("touchend", () => {
+      isDayPressing = false;
+      clearTimeout(pressTimer);
+    });
 
-        div.addEventListener("mouseup", () => {
-          clearTimeout(pressTimer);
-        });
+    div.addEventListener("touchcancel", () => {
+      isDayPressing = false;
+      clearTimeout(pressTimer);
+    });
 
-        div.addEventListener("mouseleave", () => {
-          clearTimeout(pressTimer);
-        });
+    div.addEventListener("mousedown", () => {
+      pressTimer = setTimeout(() => {
+        vibrate("medium");
+        openModal(date);
+      }, 500);
+    });
 
-        div.addEventListener("dblclick", () => {
-          vibrate("medium");
-          openModal(date);
-        });
+    div.addEventListener("mouseup", () => {
+      clearTimeout(pressTimer);
+    });
 
+    div.addEventListener("mouseleave", () => {
+      clearTimeout(pressTimer);
+    });
+
+    div.addEventListener("dblclick", () => {
+      vibrate("medium");
+      openModal(date);
+    });
         grid.appendChild(div);
       }
     }
