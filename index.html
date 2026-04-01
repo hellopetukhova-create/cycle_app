@@ -7,6 +7,33 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
+  /* Липкий header */
+.top-switch {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+
+  transition: all 0.25s ease;
+
+  width: 220px;
+  margin: 10px auto 14px;
+  border-radius: 14px;
+  padding: 4px;
+}
+
+.top-switch.scrolled {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+
+  transform: scale(0.96);
+  margin-top: 4px;
+}
+.top-switch.scrolled .top-tab {
+  font-size: 12px;
+}
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1139,6 +1166,19 @@
 </div>
 
   <script>
+// ==== Отслеживание скролла ====
+window.addEventListener("scroll", () => {
+  const header = document.querySelector(".top-switch");
+  if (!header) return;
+
+  const scrollY = window.scrollY;
+
+  if (scrollY > 10) {
+    header.classList.add("scrolled");
+  } else {
+    header.classList.remove("scrolled");
+  }
+});    
 // ==== Переключение экранов ====
   const homeScreen = document.getElementById("home-screen");
   const calendarScreen = document.getElementById("calendar-screen");
