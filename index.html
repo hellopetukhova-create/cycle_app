@@ -1224,7 +1224,7 @@ button,
 <div id="day-modal" class="modal hidden">
   <div class="modal-box">
     <div class="modal-title">Выбери действие</div>
-    <button class="modal-action" onclick="setCycleStart()">Сделать началом цикла</button>
+    <button class="modal-action" onclick="confirmCycleStart()">Сделать началом цикла</button>
     <button class="modal-action" onclick="markPeriodDay()">Отметить день менструации</button>
     <button class="modal-action" onclick="removePeriodDay()">Убрать отметку</button>
     <button class="modal-cancel" onclick="closeModal()">Отмена</button>
@@ -1285,10 +1285,6 @@ document.addEventListener("selectionchange", () => {
     }
   }
 
-    let touchStartX = 0;
-    let touchEndX = 0;
-    let isDragging = false;
-    let currentTranslateX = 0;
     let touchStartTime = 0;
     let isDayPressing = false;
     let touchStartY = 0;
@@ -1311,6 +1307,18 @@ document.addEventListener("selectionchange", () => {
       "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
     ];
+// ==== Функция подтверждения цикла ====
+function confirmCycleStart() {
+  if (!modalDate) return;
+
+  const dateStr = modalDate.toLocaleDateString("ru-RU");
+
+  const confirmed = confirm(`Начать новый цикл с ${dateStr}?`);
+
+  if (!confirmed) return;
+
+  setCycleStart();
+}    
 // ==== Функция анимации между экранами ====
 function animateScreenIn(element) {
   if (!element) return;
@@ -1357,29 +1365,6 @@ function showScreen(screen) {
   }
 
   saveToLocal();
-}
-// ==== Обработчик свайпа ====
-function handleSwipe(duration) {
-  if (viewMode !== "month") return;
-
-  const diff = touchStartX - touchEndX;
-  const absDiff = Math.abs(diff);
-
-  const distanceThreshold = 40;   // расстояние
-  const velocityThreshold = 0.3;  // скорость
-
-  const velocity = absDiff / duration;
-
-  const isFastSwipe = velocity > velocityThreshold;
-  const isLongSwipe = absDiff > distanceThreshold;
-
-  if (!isFastSwipe && !isLongSwipe) return;
-
-  if (diff > 0) {
-    nextMonth();
-  } else {
-    prevMonth();
-  }
 }
 // ==== Падающие цветы на главной ====
     function createFlowerSVG(size = 28) {
@@ -2183,56 +2168,6 @@ function renderPhaseCard(date = new Date()) {
     launchFlowerRain();
     showScreen(activeScreen);
 
-// ==== Навесила события на календарь ====
-const calendarEl = document.querySelector(".calendar");
-
-let swipeStartX = 0;
-let swipeStartY = 0;
-let swipeStartTime = 0;
-
-if (calendarEl) {
-  calendarEl.addEventListener("touchstart", (e) => {
-    if (viewMode !== "month") return;
-
-    const t = e.touches[0];
-    swipeStartX = t.clientX;
-    swipeStartY = t.clientY;
-    swipeStartTime = Date.now();
-  }, { passive: true });
-
-  calendarEl.addEventListener("touchend", (e) => {
-    if (viewMode !== "month") return;
-
-    const t = e.changedTouches[0];
-    const dx = t.clientX - swipeStartX;
-    const dy = t.clientY - swipeStartY;
-    const dt = Date.now() - swipeStartTime;
-
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-    const velocity = absX / Math.max(dt, 1);
-
-    // если жест больше вертикальный — считаем это обычным скроллом
-    if (absY > absX) return;
-
-    // свайп засчитываем либо по длине, либо по скорости
-    if (absX < 45 && velocity < 0.35) return;
-
-    if (dx < 0) {
-      nextMonth();
-    } else {
-      prevMonth();
-    }
-  }, { passive: true });
-}
-
-  calendarEl.addEventListener("touchcancel", () => {
-    isDragging = false;
-    isHorizontalSwipe = false;
-    currentTranslateX = 0;
-    calendarEl.style.transition = "transform 0.2s ease";
-    calendarEl.style.transform = "translateX(0)";
-  });
 
 function renderYear() {
   const yearView = document.getElementById("year-view");
