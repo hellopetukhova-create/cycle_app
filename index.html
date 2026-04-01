@@ -1146,12 +1146,18 @@
   const btnHome = document.getElementById("btn-home");
   const btnCalendar = document.getElementById("btn-calendar");
 
-    const tg = window.Telegram?.WebApp;
+  const tg = window.Telegram?.WebApp;
 
-    if (tg) {
-      tg.ready();
-      tg.expand();
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    tg.isClosingConfirmationEnabled = true;
+
+    // 🚫 отключаем свайп вниз (закрытие)
+    if (tg.disableVerticalSwipes) {
+      tg.disableVerticalSwipes();
     }
+  }
 
     let touchStartX = 0;
     let touchEndX = 0;
