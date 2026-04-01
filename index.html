@@ -913,35 +913,35 @@ button,
 }
 
 .home-main-card {
-  background: linear-gradient(180deg, #fff6fb 0%, #f6f2ff 100%);
-  border-radius: 26px;
-  padding: 26px 20px;
+  background: radial-gradient(
+    120% 120% at 50% 0%,
+    #f3eaff 0%,
+    #efe7ff 40%,
+    #f7f4ff 100%
+  );
+
+  border-radius: 28px;
+  padding: 28px 20px;
   text-align: center;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255,255,255,0.6);
+    0 10px 30px rgba(120, 100, 255, 0.08);
 
-  transition: transform 0.25s ease;
-}
-
-.home-main-card:active {
-  transform: scale(0.98);
+  border: 1px solid rgba(120, 100, 255, 0.08);
 }
 
 .home-phase {
   font-size: 13px;
   font-weight: 600;
-  color: #8b7cff;
-  margin-bottom: 6px;
-  letter-spacing: 0.3px;
+  color: #7b6cff;
+  margin-bottom: 8px;
 }
 
 .home-main {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
-  color: #1f1f1f;
+  color: #111;
   margin-bottom: 6px;
 }
 
@@ -952,13 +952,13 @@ button,
 /* Mini cards */
 .home-mini-card {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 22px;
+  padding: 18px;
 
   box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.05);
+    0 4px 14px rgba(0, 0, 0, 0.04);
 
-  transition: transform 0.2s ease;
+  border: 1px solid #f2f2f2;
 }
 
 .home-mini-card:active {
@@ -974,7 +974,7 @@ button,
 .mini-value {
   font-size: 20px;
   font-weight: 700;
-  color: #1f1f1f;
+  color: #d89b2b; /* мягкий акцент */
 }
 
 .mini-text {
@@ -983,12 +983,11 @@ button,
 }
 
 .home-tip-card {
-  background: #fafafa;
-  border-radius: 20px;
-  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 22px;
+  padding: 18px;
 
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.7);
+  border: 1px solid #f0f0f0;
 }
 
 .home-grid {
@@ -1040,24 +1039,6 @@ button,
   color: #666;
   line-height: 1.5;
   white-space: pre-line;
-}
-
-.home-calendar-btn {
-  background: linear-gradient(135deg, #1f1f1f, #000);
-  border-radius: 18px;
-  padding: 16px;
-  font-size: 15px;
-  font-weight: 600;
-
-  box-shadow:
-    0 6px 16px rgba(0,0,0,0.2);
-
-  transition: all 0.2s ease;
-}
-
-.home-calendar-btn:active {
-  transform: scale(0.96);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
 
 #home-screen {
@@ -1132,6 +1113,59 @@ button,
   opacity: 1;
   transform: translateY(0);
 }
+/* CYCLE CIRCLE */
+.cycle-ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 10px auto 14px;
+}
+
+.cycle-ring {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.cycle-ring-bg {
+  fill: none;
+  stroke: rgba(123, 108, 255, 0.12);
+  stroke-width: 10;
+}
+
+.cycle-ring-progress {
+  fill: none;
+  stroke: #7b6cff;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 301.59;
+  stroke-dashoffset: 301.59;
+  transition: stroke-dashoffset 0.5s ease;
+  filter: drop-shadow(0 2px 8px rgba(123, 108, 255, 0.18));
+}
+
+.cycle-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cycle-ring-day {
+  font-size: 34px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1;
+}
+
+.cycle-ring-label {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 4px;
+  text-transform: lowercase;
+}
 
 </style>
 </head>
@@ -1147,10 +1181,23 @@ button,
 <div id="home-screen" class="screen">
 
   <div class="home-date" id="home-date">1 апр.</div>
-
+  
   <div class="home-main-card">
     <div class="home-phase" id="home-phase">Фаза цикла</div>
-    <div class="home-main" id="home-main">День цикла</div>
+
+    <div class="cycle-ring-wrap">
+      <svg class="cycle-ring" viewBox="0 0 120 120">
+        <circle class="cycle-ring-bg" cx="60" cy="60" r="48"></circle>
+        <circle class="cycle-ring-progress" id="cycle-ring-progress" cx="60" cy="60" r="48"></circle>
+      </svg>
+
+      <div class="cycle-ring-center">
+        <div class="cycle-ring-day" id="cycle-ring-day">20</div>
+        <div class="cycle-ring-label">день</div>
+      </div>
+    </div>
+
+    <div class="home-main" id="home-main">День цикла 20</div>
     <div class="home-sub" id="home-sub">Информация</div>
   </div>
 
@@ -1172,10 +1219,6 @@ button,
     <div class="mini-title">Совет дня</div>
     <div class="home-tip-text" id="home-tip-text">Совет появится здесь</div>
   </div>
-
-  <button class="home-calendar-btn" onclick="showScreen('calendar')">
-    Открыть календарь
-  </button>
 
 </div>
 
@@ -1724,15 +1767,17 @@ function setViewMode(mode) {
     }
 // ==== Функция HomeScreen ====
     function renderHomeScreen(date = new Date()) {
-  const dateEl = document.getElementById("home-date");
-  const phaseEl = document.getElementById("home-phase");
-  const mainEl = document.getElementById("home-main");
-  const subEl = document.getElementById("home-sub");
-  const fertilityStatusEl = document.getElementById("home-fertility-status");
-  const fertilityTextEl = document.getElementById("home-fertility-text");
-  const nextCycleEl = document.getElementById("home-next-cycle");
-  const nextCycleTextEl = document.getElementById("home-next-cycle-text");
-  const tipEl = document.getElementById("home-tip-text");
+      const dateEl = document.getElementById("home-date");
+      const phaseEl = document.getElementById("home-phase");
+      const mainEl = document.getElementById("home-main");
+      const subEl = document.getElementById("home-sub");
+      const fertilityStatusEl = document.getElementById("home-fertility-status");
+      const fertilityTextEl = document.getElementById("home-fertility-text");
+      const nextCycleEl = document.getElementById("home-next-cycle");
+      const nextCycleTextEl = document.getElementById("home-next-cycle-text");
+      const tipEl = document.getElementById("home-tip-text");
+      const ringDayEl = document.getElementById("cycle-ring-day");
+      const ringProgressEl = document.getElementById("cycle-ring-progress");
 
   if (
     !dateEl || !phaseEl || !mainEl || !subEl ||
@@ -1742,6 +1787,23 @@ function setViewMode(mode) {
 
   const target = normalize(date);
   const cycleDay = Math.floor((target - normalize(lastStart)) / 86400000) + 1;
+  let phaseColor = "#7b6cff"; // по умолчанию
+
+  // пример логики (подстрой под свою)
+  if (cycleDay <= periodLength) {
+    phaseColor = "#ff6b8a"; // 🩸 менструация
+  } else if (cycleDay <= cycleLength / 2) {
+    phaseColor = "#6ccf9b"; // 🌱 фолликулярная
+  } else if (cycleDay >= cycleLength - 14 && cycleDay <= cycleLength - 12) {
+    phaseColor = "#ffb84d"; // ☀️ овуляция
+  } else {
+    phaseColor = "#7b6cff"; // 🌙 лютеиновая
+  }
+
+  const safeCycleDay = cycleDay > 0 ? cycleDay : 0;
+  const progress = Math.min(Math.max(safeCycleDay / cycleLength, 0), 1);
+  const circumference = 2 * Math.PI * 48;
+  const offset = circumference * (1 - progress);
 
   const nextCycle = getNextCycleStart();
   const diffToNext = Math.ceil((normalize(nextCycle) - target) / 86400000);
@@ -1753,8 +1815,18 @@ function setViewMode(mode) {
   const m = date.toLocaleString("ru-RU", { month: "short" });
   dateEl.innerText = `${d} ${m}`;
 
-  phaseEl.innerText = phase.title;
+  phaseEl.innerText = phase.icon ? `${phase.icon} ${phase.title}` : phase.title;
+  phaseEl.style.color = phaseColor;
 
+  if (ringDayEl) {
+    ringDayEl.innerText = safeCycleDay > 0 ? safeCycleDay : "—";
+  }
+
+  if (ringProgressEl) {
+    ringProgressEl.style.strokeDasharray = `${circumference}`;
+    ringProgressEl.style.strokeDashoffset = `${offset}`;
+    ringProgressEl.style.stroke = phaseColor;
+  }
   if (cycleDay > 0) {
     mainEl.innerText = `День цикла ${cycleDay}`;
   } else {
