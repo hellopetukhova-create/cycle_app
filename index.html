@@ -913,6 +913,26 @@
 .home-calendar-btn:active {
   transform: scale(0.98);
 }
+/* Анимаци между Home screen и Calendar */
+.screen {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.screen.hidden {
+  display: none !important;
+}
+
+.screen.anim-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.screen.anim-active {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 </head>
 
@@ -1112,28 +1132,47 @@
       "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
     ];
-// ==== Перключение экранов ====
-  function showScreen(screen) {
-  activeScreen = screen;
-    const home = document.getElementById("home-screen");
-    const calendar = document.getElementById("calendar-screen");
+// ==== Функция анимации между экранами ====
+function animateScreenIn(element) {
+  if (!element) return;
 
-    const btnHome = document.getElementById("btn-home");
-    const btnCalendar = document.getElementById("btn-calendar");
+  element.classList.remove("hidden");
+  element.classList.add("anim-enter");
+
+  requestAnimationFrame(() => {
+    element.classList.add("anim-active");
+    element.classList.remove("anim-enter");
+  });
+}    
+// ==== Перключение экранов ====
+function showScreen(screen) {
+  activeScreen = screen;
+
+  const home = document.getElementById("home-screen");
+  const calendar = document.getElementById("calendar-screen");
+
+  const btnHome = document.getElementById("btn-home");
+  const btnCalendar = document.getElementById("btn-calendar");
 
   if (!home || !calendar || !btnHome || !btnCalendar) return;
 
   if (screen === "home") {
-    home.classList.remove("hidden");
     calendar.classList.add("hidden");
+    home.classList.remove("anim-active");
+    animateScreenIn(home);
+
     btnHome.classList.add("active");
     btnCalendar.classList.remove("active");
+
     renderHomeScreen(new Date());
   } else {
     home.classList.add("hidden");
-    calendar.classList.remove("hidden");
+    calendar.classList.remove("anim-active");
+    animateScreenIn(calendar);
+
     btnHome.classList.remove("active");
     btnCalendar.classList.add("active");
+
     render();
     renderStats();
     renderFertilityCard(new Date());
