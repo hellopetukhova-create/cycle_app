@@ -9,30 +9,29 @@
   <style>
   /* Липкий header */
 .top-switch {
+  display: flex;
+  width: 220px;
+  margin: 10px auto 14px;
+  background: #f3f3f3;
+  border-radius: 14px;
+  padding: 3px;
+  transition: all 0.25s ease;
+}
+
+/* sticky включается только на экране календаря */
+.top-switch.sticky-switch {
   position: sticky;
   top: 0;
   z-index: 100;
-
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(6px);
-
-  transition: all 0.25s ease;
-
-  width: 220px;
-  margin: 10px auto 14px;
-  border-radius: 14px;
-  padding: 4px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
 }
 
-.top-switch.scrolled {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-
+.top-switch.sticky-switch.scrolled {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
   transform: scale(0.96);
   margin-top: 4px;
-}
-.top-switch.scrolled .top-tab {
-  font-size: 12px;
 }
     body {
       margin: 0;
@@ -1170,7 +1169,11 @@
 window.addEventListener("scroll", () => {
   const header = document.querySelector(".top-switch");
   if (!header) return;
-
+  // На главной странице не делаем стеклянный sticky-эффект
+  if (activeScreen !==calendar){
+    header.classList.remove ("scrolled")
+    return;
+  }
   const scrollY = window.scrollY;
 
   if (scrollY > 10) {
@@ -1239,29 +1242,27 @@ function showScreen(screen) {
 
   const home = document.getElementById("home-screen");
   const calendar = document.getElementById("calendar-screen");
-
   const btnHome = document.getElementById("btn-home");
   const btnCalendar = document.getElementById("btn-calendar");
+  const topSwitch = document.querySelector(".top-switch");
 
-  if (!home || !calendar || !btnHome || !btnCalendar) return;
+  if (!home || !calendar || !btnHome || !btnCalendar || !topSwitch) return;
 
   if (screen === "home") {
+    home.classList.remove("hidden");
     calendar.classList.add("hidden");
-    home.classList.remove("anim-active");
-    animateScreenIn(home);
-
     btnHome.classList.add("active");
     btnCalendar.classList.remove("active");
 
+    topSwitch.classList.remove("sticky-switch", "scrolled");
     renderHomeScreen(new Date());
   } else {
     home.classList.add("hidden");
-    calendar.classList.remove("anim-active");
-    animateScreenIn(calendar);
-
+    calendar.classList.remove("hidden");
     btnHome.classList.remove("active");
     btnCalendar.classList.add("active");
 
+    topSwitch.classList.add("sticky-switch");
     render();
     renderStats();
     renderFertilityCard(new Date());
