@@ -239,6 +239,13 @@ button,
     .save-btn:active {
       transform: scale(0.97);
     }
+    .save-btn {
+      margin-top: 8px;
+    }
+
+    .save-status {
+      margin-top: 8px;
+    }
 /* Модалка */
     .modal {
       position: fixed;
@@ -1142,6 +1149,15 @@ button,
     </div>
   </div>
 
+<!-- 👉 SAVE BLOCK ПЕРЕНЕСЕН СЮДА -->
+<div id="save-status" class="save-status">Локально сохранено</div>
+<button class="save-btn" onclick="sendSave()">
+  Сохранить в бот 🌸
+</button>
+
+  <div id="save-status" class="save-status">Локально сохранено</div>
+  <button class="save-btn" onclick="sendSave()">Сохранить в бот 🌸</button>
+
   <!-- День цикла -->
   <div class="card">
     <div class="big" id="status">День цикла</div>
@@ -1208,9 +1224,6 @@ button,
     <div class="chart-title">Длина последних циклов</div>
     <div id="cycle-chart" class="cycle-chart"></div>
   </div>
-
-  <div id="save-status" class="save-status">Локально сохранено</div>
-  <button class="save-btn" onclick="sendSave()">Сохранить в бот 🌸</button>
 
   <!-- Модалка -->
 <div id="day-modal" class="modal hidden">
