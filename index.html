@@ -1513,6 +1513,107 @@ button,
   </div>
 </div>
   <script>
+// ==== Словарь RU/RNG ====
+const I18N = {
+  ru: {
+    home_tab: "Сегодня",
+    calendar_tab: "Календарь",
+    today_btn: "Сегодня",
+    month: "Месяц",
+    year: "Год",
+    cycle_day: "День цикла",
+    info: "Информация",
+    fertility: "Фертильность",
+    cycle_phase: "Фаза цикла",
+    stats: "Статистика",
+    avg_cycle: "Средний цикл",
+    avg_period: "Средняя менструация",
+    cycles_count: "Циклов",
+    recent_cycles: "Длина последних циклов",
+    save_btn: "Сохранить в бот 🌸",
+    save_local: "Локально сохранено",
+    save_ok: "Сохранено ✓",
+    save_sent: "Отправлено в бот ✓",
+    save_error: "Ошибка отправки",
+    open_calendar: "Открыть календарь",
+    advice_day: "Совет дня",
+    next_cycle: "Следующий цикл",
+    fertility_card: "Фертильность",
+    app_docs: "О приложении и документы",
+    choose_action: "Выбери действие",
+    start_cycle: "Сделать началом цикла",
+    mark_period: "Отметить день менструации",
+    unmark_period: "Убрать отметку",
+    cancel: "Отмена",
+    legal_docs: "Документы",
+    about_app: "О приложении",
+    legal_subtitle: "Здесь можно посмотреть политику конфиденциальности и условия использования.",
+    privacy: "Политика конфиденциальности",
+    terms: "Пользовательское соглашение",
+    back: "Назад",
+    choose_doc: "Выбери документ выше",
+    no_chart_data: "Пока мало данных для графика",
+    before_cycle: "До начала цикла",
+    ordinary_day: "Обычный день",
+    menstruation: "Менструация 🩸",
+    ovulation: "Овуляция 💜",
+    fertile_window: "Фертильное окно 🌸",
+    until_next_cycle: "До следующего цикла: {days} дн.",
+    next_cycle_date: "Примерная дата:\n{date}",
+    cycle_in_days: "{days} дн.",
+    today_word: "Сегодня",
+    soon_new_cycle: "Скоро начнётся новый цикл"
+  },
+  en: {
+    home_tab: "Today",
+    calendar_tab: "Calendar",
+    today_btn: "Today",
+    month: "Month",
+    year: "Year",
+    cycle_day: "Cycle day",
+    info: "Info",
+    fertility: "Fertility",
+    cycle_phase: "Cycle phase",
+    stats: "Statistics",
+    avg_cycle: "Average cycle",
+    avg_period: "Average period",
+    cycles_count: "Cycles",
+    recent_cycles: "Recent cycle lengths",
+    save_btn: "Save to bot 🌸",
+    save_local: "Saved locally",
+    save_ok: "Saved ✓",
+    save_sent: "Sent to bot ✓",
+    save_error: "Send error",
+    open_calendar: "Open calendar",
+    advice_day: "Tip of the day",
+    next_cycle: "Next cycle",
+    fertility_card: "Fertility",
+    app_docs: "About app and documents",
+    choose_action: "Choose an action",
+    start_cycle: "Set as cycle start",
+    mark_period: "Mark period day",
+    unmark_period: "Remove mark",
+    cancel: "Cancel",
+    legal_docs: "Documents",
+    about_app: "About app",
+    legal_subtitle: "Here you can read the privacy policy and terms of use.",
+    privacy: "Privacy Policy",
+    terms: "Terms of Use",
+    back: "Back",
+    choose_doc: "Choose a document above",
+    no_chart_data: "Not enough data for the chart yet",
+    before_cycle: "Before cycle start",
+    ordinary_day: "Ordinary day",
+    menstruation: "Menstruation 🩸",
+    ovulation: "Ovulation 💜",
+    fertile_window: "Fertile window 🌸",
+    until_next_cycle: "Until next cycle: {days} d.",
+    next_cycle_date: "Estimated date:\n{date}",
+    cycle_in_days: "{days} d.",
+    today_word: "Today",
+    soon_new_cycle: "A new cycle is expected soon"
+  }
+};    
 // ==== Отслеживание скролла ====
 window.addEventListener("scroll", () => {
   const header = document.querySelector(".top-switch");
@@ -1751,7 +1852,7 @@ function showScreen(screen) {
         activeScreen
       };
       localStorage.setItem("cycleAppState", JSON.stringify(state));
-      setSaveStatus("Сохранено ✓");
+      setSaveStatus(tr("save_ok"));
     }
 
     function loadFromLocal() {
@@ -2018,22 +2119,25 @@ function setViewMode(mode) {
     ringProgressEl.style.stroke = phaseColor;
   }
   if (cycleDay > 0) {
-    mainEl.innerText = `День цикла ${cycleDay}`;
+    mainEl.innerText = `${tr("cycle_day")} ${cycleDay}`;
   } else {
-    mainEl.innerText = "До начала цикла";
+    mainEl.innerText = tr("before_cycle");
   }
 
   if (diffToNext > 0) {
-    subEl.innerText = `До следующего цикла: ${diffToNext} дн.`;
+    subEl.innerText = tr("until_next_cycle", { days: diffToNext });
   } else {
-    subEl.innerText = "Скоро начнётся новый цикл";
+    subEl.innerText = tr("soon_new_cycle");
   }
 
   fertilityStatusEl.innerText = fertility.title;
   fertilityTextEl.innerText = fertility.text;
 
-  nextCycleEl.innerText = diffToNext > 0 ? `${diffToNext} дн.` : "Сегодня";
-  nextCycleTextEl.innerText = `Примерная дата:\n${formatISO(nextCycle)}`;
+  nextCycleEl.innerText = diffToNext > 0
+    ? tr("cycle_in_days", { days: diffToNext })
+    : tr("today_word");
+
+  nextCycleTextEl.innerText = tr("next_cycle_date", { date: formatISO(nextCycle) });
 
   tipEl.innerText = phase.tip;
 }
@@ -2202,7 +2306,7 @@ let dayTouchStartY = 0;
         (normalize(date) - normalize(lastStart)) / 86400000
       ) + 1;
 
-      status.innerText = diff > 0 ? `День цикла ${diff}` : "До начала цикла";
+      status.innerText = diff > 0 ? `${tr("cycle_day")} ${diff}` : tr("before_cycle");
 
       const ovulation = getOvulation(lastStart);
       const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
@@ -2210,15 +2314,15 @@ let dayTouchStartY = 0;
       const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
 
       if (diff < 1) {
-        info.innerText = "До начала цикла";
+        info.innerText = tr("before_cycle");
       } else if (isBetween(date, lastStart, periodEnd)) {
-        info.innerText = `Менструация 🩸\nДо следующего цикла: ${diffToNext} дн.`;
+        info.innerText = `${tr("menstruation")}\n${tr("until_next_cycle", { days: diffToNext })}`;
       } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
-        info.innerText = `Овуляция 💜\nДо следующего цикла: ${diffToNext} дн.`;
+        info.innerText = `${tr("ovulation")}\n${tr("until_next_cycle", { days: diffToNext })}`;
       } else if (isBetween(date, fertileStart, fertileEnd)) {
-        info.innerText = `Фертильное окно 🌸\nДо следующего цикла: ${diffToNext} дн.`;
+        info.innerText = `${tr("fertile_window")}\n${tr("until_next_cycle", { days: diffToNext })}`;
       } else {
-        info.innerText = `Обычный день\nДо следующего цикла: ${diffToNext} дн.`;
+        info.innerText = `${tr("ordinary_day")}\n${tr("until_next_cycle", { days: diffToNext })}`;
       }
     renderFertilityCard(date); // ==== Подключить к ShowInfo ==== 
     renderPhaseCard(date); // ==== Подключить к ShowInfo ==== 
@@ -2241,23 +2345,35 @@ let dayTouchStartY = 0;
         };
 
         tg.sendData(JSON.stringify(payload));
-        setSaveStatus("Отправлено в бот ✓");
+        setSaveStatus(tr("save_sent"));
 
         setTimeout(() => {
           tg.close();
         }, 300);
       } catch (error) {
         console.error("Ошибка отправки в бот:", error);
-        setSaveStatus("Ошибка отправки");
+        setSaveStatus(tr("save_error"));
       }
     }
+    let appLanguage = "ru";
 
+function tr(key, vars = {}) {
+  let text = I18N[appLanguage]?.[key] || I18N.ru[key] || key;
+
+  Object.keys(vars).forEach((k) => {
+    text = text.replace(`{${k}}`, vars[k]);
+  });
+
+  return text;
+}
     const params = new URLSearchParams(window.location.search);
-  const data = params.get("data");
+    const data = params.get("data");
 
   if (data) {
     try {
       const userData = JSON.parse(decodeURIComponent(data));
+
+      appLanguage = userData.language || "ru";
 
       cycleLength = userData.cycle_length ?? 28;
       periodLength = userData.period_length ?? 5;
@@ -2280,6 +2396,73 @@ let dayTouchStartY = 0;
   } else {
     loadFromLocal();
   }
+// ==== Функция перевода интерфейса ====
+function applyStaticTranslations() {
+  const btnHome = document.getElementById("btn-home");
+  const btnCalendar = document.getElementById("btn-calendar");
+  const todayBtn = document.querySelector(".today-btn");
+  const monthSegment = document.getElementById("month-segment");
+  const yearSegment = document.getElementById("year-segment");
+  const saveBtn = document.querySelector(".save-btn");
+  const saveStatus = document.getElementById("save-status");
+
+  if (btnHome) btnHome.innerText = tr("home_tab");
+  if (btnCalendar) btnCalendar.innerText = tr("calendar_tab");
+  if (todayBtn) todayBtn.innerText = tr("today_btn");
+  if (monthSegment) monthSegment.innerText = tr("month");
+  if (yearSegment) yearSegment.innerText = tr("year");
+  if (saveBtn) saveBtn.innerText = tr("save_btn");
+  if (saveStatus) saveStatus.innerText = tr("save_local");
+
+  const miniTitles = document.querySelectorAll(".mini-title");
+  if (miniTitles[0]) miniTitles[0].innerText = tr("fertility");
+  if (miniTitles[1]) miniTitles[1].innerText = tr("next_cycle");
+  if (miniTitles[2]) miniTitles[2].innerText = tr("advice_day");
+
+  const fertilityTitle = document.querySelector(".fertility-title");
+  if (fertilityTitle) fertilityTitle.innerText = tr("fertility_card");
+
+  const phaseTitle = document.querySelector(".phase-title");
+  if (phaseTitle) phaseTitle.innerText = tr("cycle_phase");
+
+  const statsTitle = document.querySelector(".stats-title");
+  if (statsTitle) statsTitle.innerText = tr("stats");
+
+  const statsLabels = document.querySelectorAll(".stats-label");
+  if (statsLabels[0]) statsLabels[0].innerText = tr("avg_cycle");
+  if (statsLabels[1]) statsLabels[1].innerText = tr("avg_period");
+  if (statsLabels[2]) statsLabels[2].innerText = tr("cycles_count");
+
+  const chartTitle = document.querySelector(".chart-title");
+  if (chartTitle) chartTitle.innerText = tr("recent_cycles");
+
+  const modalTitle = document.querySelector(".modal-title");
+  if (modalTitle) modalTitle.innerText = tr("choose_action");
+
+  const modalButtons = document.querySelectorAll(".modal-action");
+  if (modalButtons[0]) modalButtons[0].innerText = tr("start_cycle");
+  if (modalButtons[1]) modalButtons[1].innerText = tr("mark_period");
+  if (modalButtons[2]) modalButtons[2].innerText = tr("unmark_period");
+
+  const modalCancel = document.querySelector(".modal-cancel");
+  if (modalCancel) modalCancel.innerText = tr("cancel");
+
+  const legalLabel = document.getElementById("legal-label");
+  const legalTitle = document.getElementById("legal-title");
+  const legalSubtitle = document.getElementById("legal-subtitle");
+  const privacyBtn = document.getElementById("privacy-btn");
+  const termsBtn = document.getElementById("terms-btn");
+  const legalEmpty = document.getElementById("legal-empty");
+  const legalBackBtn = document.getElementById("legal-back-btn");
+
+  if (legalLabel) legalLabel.innerText = tr("legal_docs");
+  if (legalTitle) legalTitle.innerText = tr("about_app");
+  if (legalSubtitle) legalSubtitle.innerText = tr("legal_subtitle");
+  if (privacyBtn) privacyBtn.innerText = tr("privacy");
+  if (termsBtn) termsBtn.innerText = tr("terms");
+  if (legalEmpty) legalEmpty.innerText = tr("choose_doc");
+  if (legalBackBtn) legalBackBtn.innerText = tr("back");
+}  
 // ==== Функция Вибрации ====  
     function vibrate(type = "light") {
     const tg = window.Telegram?.WebApp;
@@ -2490,7 +2673,7 @@ function renderPhaseCard(date = new Date()) {
     current = new Date(today.getFullYear(), today.getMonth(), 1);
 
 
-
+    applyStaticTranslations();
     render();
     renderStats();
     renderFertilityCard(new Date()); // ==== При первой загрузке показать карточку ====
@@ -2631,8 +2814,7 @@ function renderStats() {
   chartEl.innerHTML = "";
 
   if (!cycleLengths.length) {
-    chartEl.innerHTML = `<div style="width:100%; text-align:center; color:#999; font-size:13px;">Пока мало данных для графика</div>`;
-    return;
+      chartEl.innerHTML = `<div style="width:100%; text-align:center; color:#999; font-size:13px;">${tr("no_chart_data")}</div>`;    return;
   }
 
   const lastValues = cycleLengths.slice(-6);
