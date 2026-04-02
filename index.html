@@ -1351,12 +1351,14 @@ button,
   </div>
 
   <!-- Календарь -->
-  <div class="calendar">
     <div class="weekdays">
-      <div>Пн</div><div>Вт</div><div>Ср</div>
-      <div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
-    </div>
-    <div id="grid" class="grid"></div>
+      <div id="wd-0">Пн</div>
+      <div id="wd-1">Вт</div>
+      <div id="wd-2">Ср</div>
+      <div id="wd-3">Чт</div>
+      <div id="wd-4">Пт</div>
+      <div id="wd-5">Сб</div>
+      <div id="wd-6">Вс</div>
   </div>
 
   <div id="year-view" class="year-view hidden">
@@ -1371,7 +1373,7 @@ button,
   <!-- День цикла -->
   <div class="card">
     <div class="big" id="status">День цикла</div>
-    <div class="small" id="info">Информация</div>
+    <div class="small" id="info">-</div>
   </div>
 
   <!-- Фертильность -->
@@ -1385,11 +1387,11 @@ button,
       <div class="fertility-icon" id="fertility-icon">🌿</div>
       <div class="fertility-content">
         <div class="fertility-status" id="fertility-status">—</div>
-        <div class="fertility-text" id="fertility-text">Информация появится здесь</div>
+        <div class="fertility-text" id="fertility-text">-</div>
       </div>
     </div>
 
-    <div class="fertility-tip" id="fertility-tip">Совет дня появится здесь</div>
+    <div class="fertility-tip" id="fertility-tip">-</div>
   </div>
 
   <!-- Фазы -->
@@ -1403,11 +1405,11 @@ button,
       <div class="phase-icon" id="phase-icon">🌙</div>
       <div class="phase-content">
         <div class="phase-status" id="phase-status">—</div>
-        <div class="phase-text" id="phase-text">Описание появится здесь</div>
+        <div class="phase-text" id="phase-text">-</div>
       </div>
     </div>
 
-    <div class="phase-tip" id="phase-tip">Совет появится здесь</div>
+    <div class="phase-tip" id="phase-tip">-</div>
   </div>
 
   <!-- Статистика -->
@@ -1445,7 +1447,7 @@ button,
   </div>
 </div>
 
-</div><!-- конец calendar-screen -->
+</div><!-- конец calendar-screen -->  
 <!-- ================= LEGAL SCREEN ================= -->
 <div id="legal-screen" class="screen hidden">
   <div class="legal-wrap">
@@ -1562,7 +1564,18 @@ const I18N = {
     next_cycle_date: "Примерная дата:\n{date}",
     cycle_in_days: "{days} дн.",
     today_word: "Сегодня",
-    soon_new_cycle: "Скоро начнётся новый цикл"
+    soon_new_cycle: "Скоро начнётся новый цикл",
+    weekdays: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+    year_coming_soon: "Режим года скоро будет здесь ✨",
+    fertility_placeholder: "Информация появится здесь",
+    fertility_tip_placeholder: "Совет дня появится здесь",
+    phase_placeholder: "Описание появится здесь",
+    phase_tip_placeholder: "Совет появится здесь",
+    months: [
+    "Январь","Февраль","Март","Апрель","Май","Июнь",
+    "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь",
+    
+],
   },
   en: {
     home_tab: "Today",
@@ -1611,7 +1624,18 @@ const I18N = {
     next_cycle_date: "Estimated date:\n{date}",
     cycle_in_days: "{days} d.",
     today_word: "Today",
-    soon_new_cycle: "A new cycle is expected soon"
+    soon_new_cycle: "A new cycle is expected soon",
+    weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    year_coming_soon: "Year view will be here soon ✨",
+    fertility_placeholder: "Information will appear here",
+    fertility_tip_placeholder: "Tip of the day will appear here",
+    phase_placeholder: "Description will appear here",
+    phase_tip_placeholder: "Tip will appear here",
+    months: [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December",
+
+],
   }
 };    
 // ==== Отслеживание скролла ====
@@ -1830,12 +1854,16 @@ function showScreen(screen) {
     }
 
     function formatISO(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
+      if (appLanguage === "en") {
+        return date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        });
+      }
 
+      return date.toLocaleDateString("ru-RU");
+    }
     function setSaveStatus(text) {
       const statusEl = document.getElementById("save-status");
       if (statusEl) statusEl.innerText = text;
@@ -2150,7 +2178,7 @@ function setViewMode(mode) {
       const year = current.getFullYear();
       const m = current.getMonth();
 
-      month.innerText = `${monthNames[m]} ${year}`;
+      const monthName = I18N[appLanguage]?.months[m] || I18N.ru.months[m];
 
       const firstDay = new Date(year, m, 1).getDay();
       const offset = firstDay === 0 ? 6 : firstDay - 1;
@@ -2462,6 +2490,37 @@ function applyStaticTranslations() {
   if (termsBtn) termsBtn.innerText = tr("terms");
   if (legalEmpty) legalEmpty.innerText = tr("choose_doc");
   if (legalBackBtn) legalBackBtn.innerText = tr("back");
+
+    const weekdays = I18N[appLanguage]?.weekdays || I18N.ru.weekdays;
+  weekdays.forEach((day, index) => {
+    const el = document.getElementById(`wd-${index}`);
+    if (el) el.innerText = day;
+  });
+
+  const yearPlaceholder = document.querySelector(".year-placeholder");
+  if (yearPlaceholder) yearPlaceholder.innerText = tr("year_coming_soon");
+
+  const fertilityText = document.getElementById("fertility-text");
+  const fertilityTip = document.getElementById("fertility-tip");
+  const phaseText = document.getElementById("phase-text");
+  const phaseTip = document.getElementById("phase-tip");
+  const info = document.getElementById("info");
+
+  if (fertilityText && fertilityText.innerText.includes("Информация")) {
+    fertilityText.innerText = tr("fertility_placeholder");
+  }
+  if (fertilityTip && fertilityTip.innerText.includes("Совет")) {
+    fertilityTip.innerText = tr("fertility_tip_placeholder");
+  }
+  if (phaseText && phaseText.innerText.includes("Описание")) {
+    phaseText.innerText = tr("phase_placeholder");
+  }
+  if (phaseTip && phaseTip.innerText.includes("Совет")) {
+    phaseTip.innerText = tr("phase_tip_placeholder");
+  }
+  if (info && info.innerText === "Информация") {
+    info.innerText = tr("info");
+  }
 }  
 // ==== Функция Вибрации ====  
     function vibrate(type = "light") {
@@ -2471,7 +2530,7 @@ function applyStaticTranslations() {
   }
 
 // ==== Функция ФЕРТИЛЬНОСТЬ ====
-   function getFertilityInfo(date = new Date()) {
+  function getFertilityInfo(date = new Date()) {
   const target = normalize(date);
   const ovulation = getOvulation(lastStart);
   const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
@@ -2484,11 +2543,15 @@ function applyStaticTranslations() {
   if (target.getTime() === normalize(ovulation).getTime()) {
     return {
       level: "peak",
-      badge: "Пик",
+      badge: appLanguage === "ru" ? "Пик" : "Peak",
       icon: "💜",
-      title: "Пик фертильности",
-      text: "Сегодня предполагаемый день овуляции.\nВероятность зачатия наиболее высокая.",
-      tip: "Если ты отслеживаешь фертильное окно, это самый важный день цикла."
+      title: appLanguage === "ru" ? "Пик фертильности" : "Peak fertility",
+      text: appLanguage === "ru"
+        ? "Сегодня предполагаемый день овуляции.\nВероятность зачатия наиболее высокая."
+        : "Today is the estimated ovulation day.\nThe probability of conception is at its highest.",
+      tip: appLanguage === "ru"
+        ? "Если ты отслеживаешь фертильное окно, это самый важный день цикла."
+        : "If you track your fertile window, this is the most important day of the cycle."
     };
   }
 
@@ -2496,21 +2559,29 @@ function applyStaticTranslations() {
     if (diffToOvulation > 0) {
       return {
         level: "high",
-        badge: "Высокая",
+        badge: appLanguage === "ru" ? "Высокая" : "High",
         icon: "🌸",
-        title: "Высокая вероятность",
-        text: `Сейчас фертильное окно.\nДо овуляции примерно ${diffToOvulation} дн.`,
-        tip: "Организм приближается к овуляции, это активная фаза цикла."
+        title: appLanguage === "ru" ? "Высокая вероятность" : "High probability",
+        text: appLanguage === "ru"
+          ? `Сейчас фертильное окно.\nДо овуляции примерно ${diffToOvulation} дн.`
+          : `You are currently in the fertile window.\nAbout ${diffToOvulation} day(s) until ovulation.`,
+        tip: appLanguage === "ru"
+          ? "Организм приближается к овуляции, это активная фаза цикла."
+          : "Your body is approaching ovulation. This is an active phase of the cycle."
       };
     }
 
     return {
       level: "high",
-      badge: "Высокая",
+      badge: appLanguage === "ru" ? "Высокая" : "High",
       icon: "🌷",
-      title: "Высокая вероятность",
-      text: "Сейчас фертильное окно.\nВероятность зачатия повышена.",
-      tip: "Фертильное окно ещё продолжается, наблюдай за ощущениями и самочувствием."
+      title: appLanguage === "ru" ? "Высокая вероятность" : "High probability",
+      text: appLanguage === "ru"
+        ? "Сейчас фертильное окно.\nВероятность зачатия повышена."
+        : "You are currently in the fertile window.\nThe probability of conception is elevated.",
+      tip: appLanguage === "ru"
+        ? "Фертильное окно ещё продолжается, наблюдай за ощущениями и самочувствием."
+        : "The fertile window is still ongoing. Pay attention to how you feel."
     };
   }
 
@@ -2521,21 +2592,29 @@ function applyStaticTranslations() {
   if (daysAfterOvulation >= 2 && daysAfterOvulation <= 5) {
     return {
       level: "medium",
-      badge: "Средняя",
+      badge: appLanguage === "ru" ? "Средняя" : "Medium",
       icon: "☀️",
-      title: "Средняя вероятность",
-      text: "Фертильное окно уже прошло,\nно цикл всё ещё в активной фазе.",
-      tip: "Сейчас можно больше фокусироваться на энергии, сне и восстановлении."
+      title: appLanguage === "ru" ? "Средняя вероятность" : "Medium probability",
+      text: appLanguage === "ru"
+        ? "Фертильное окно уже прошло,\nно цикл всё ещё в активной фазе."
+        : "The fertile window has already passed,\nbut the cycle is still in an active phase.",
+      tip: appLanguage === "ru"
+        ? "Сейчас можно больше фокусироваться на энергии, сне и восстановлении."
+        : "This is a good time to focus more on energy, sleep, and recovery."
     };
   }
 
   return {
     level: "low",
-    badge: "Низкая",
+    badge: appLanguage === "ru" ? "Низкая" : "Low",
     icon: "🌿",
-    title: "Низкая вероятность",
-    text: "Сейчас вероятность зачатия ниже,\nчем в фертильное окно.",
-    tip: "Это более спокойная фаза цикла. Хорошее время для наблюдения за ритмом организма."
+    title: appLanguage === "ru" ? "Низкая вероятность" : "Low probability",
+    text: appLanguage === "ru"
+      ? "Сейчас вероятность зачатия ниже,\nчем в фертильное окно."
+      : "The probability of conception is currently lower\nthan during the fertile window.",
+    tip: appLanguage === "ru"
+      ? "Это более спокойная фаза цикла. Хорошее время для наблюдения за ритмом организма."
+      : "This is a calmer phase of the cycle. A good time to observe your body's rhythm."
   };
 }
 // ==== Функция Отрисовка карточки Фертильности ====
@@ -2583,54 +2662,74 @@ function getCyclePhaseInfo(date = new Date()) {
   if (cycleDay < 1) {
     return {
       level: "follicular",
-      badge: "Ожидание",
+      badge: appLanguage === "ru" ? "Ожидание" : "Waiting",
       icon: "🌿",
-      title: "До начала цикла",
-      text: "Следующий цикл ещё не начался.",
-      tip: "Сейчас ориентируйся на прогноз и наблюдай за самочувствием."
+      title: appLanguage === "ru" ? "До начала цикла" : "Before cycle start",
+      text: appLanguage === "ru"
+        ? "Следующий цикл ещё не начался."
+        : "The next cycle has not started yet.",
+      tip: appLanguage === "ru"
+        ? "Сейчас ориентируйся на прогноз и наблюдай за самочувствием."
+        : "For now, rely on the prediction and pay attention to how you feel."
     };
   }
 
   if (cycleDay <= periodLength) {
     return {
       level: "menstrual",
-      badge: "Менструация",
+      badge: appLanguage === "ru" ? "Менструация" : "Period",
       icon: "🩸",
-      title: "Менструальная фаза",
-      text: "Сейчас идут дни менструации.\nОрганизм находится в фазе обновления.",
-      tip: "Хорошее время для отдыха, мягкого режима и бережного отношения к себе."
+      title: appLanguage === "ru" ? "Менструальная фаза" : "Menstrual phase",
+      text: appLanguage === "ru"
+        ? "Сейчас идут дни менструации.\nОрганизм находится в фазе обновления."
+        : "These are menstruation days.\nYour body is currently in a renewal phase.",
+      tip: appLanguage === "ru"
+        ? "Хорошее время для отдыха, мягкого режима и бережного отношения к себе."
+        : "A good time for rest, a gentler routine, and taking care of yourself."
     };
   }
 
   if (cycleDay < ovulationDay) {
     return {
       level: "follicular",
-      badge: "Рост",
+      badge: appLanguage === "ru" ? "Рост" : "Growth",
       icon: "🌱",
-      title: "Фолликулярная фаза",
-      text: "Энергия постепенно растёт,\nорганизм готовится к овуляции.",
-      tip: "Часто в этой фазе легче даются активность, концентрация и планы."
+      title: appLanguage === "ru" ? "Фолликулярная фаза" : "Follicular phase",
+      text: appLanguage === "ru"
+        ? "Энергия постепенно растёт,\nорганизм готовится к овуляции."
+        : "Energy is gradually increasing,\nand your body is preparing for ovulation.",
+      tip: appLanguage === "ru"
+        ? "Часто в этой фазе легче даются активность, концентрация и планы."
+        : "In this phase, activity, focus, and planning often feel easier."
     };
   }
 
   if (cycleDay === ovulationDay) {
     return {
       level: "ovulation",
-      badge: "Овуляция",
+      badge: appLanguage === "ru" ? "Овуляция" : "Ovulation",
       icon: "💜",
-      title: "Овуляторная фаза",
-      text: "Сегодня предполагаемый день овуляции.",
-      tip: "Это пик цикла. Можно внимательнее наблюдать за ощущениями и симптомами."
+      title: appLanguage === "ru" ? "Овуляторная фаза" : "Ovulatory phase",
+      text: appLanguage === "ru"
+        ? "Сегодня предполагаемый день овуляции."
+        : "Today is the estimated ovulation day.",
+      tip: appLanguage === "ru"
+        ? "Это пик цикла. Можно внимательнее наблюдать за ощущениями и симптомами."
+        : "This is the peak of the cycle. A good moment to observe your sensations and symptoms more closely."
     };
   }
 
   return {
     level: "luteal",
-    badge: "Спад",
+    badge: appLanguage === "ru" ? "Спад" : "Slowdown",
     icon: "🌙",
-    title: "Лютеиновая фаза",
-    text: "Цикл движется к следующей менструации.\nОрганизм постепенно замедляется.",
-    tip: "В этой фазе часто полезны спокойный ритм, сон и меньше перегрузки."
+    title: appLanguage === "ru" ? "Лютеиновая фаза" : "Luteal phase",
+    text: appLanguage === "ru"
+      ? "Цикл движется к следующей менструации.\nОрганизм постепенно замедляется."
+      : "The cycle is moving toward the next period.\nYour body is gradually slowing down.",
+    tip: appLanguage === "ru"
+      ? "В этой фазе часто полезны спокойный ритм, сон и меньше перегрузки."
+      : "In this phase, a calmer rhythm, better sleep, and less overload are often helpful."
   };
 }
 // ==== Отрисовка ФАЗЫ Цикла ====
