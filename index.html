@@ -1294,7 +1294,7 @@ button,
 
       <div class="cycle-ring-center">
         <div class="cycle-ring-day" id="cycle-ring-day">20</div>
-        <div class="cycle-ring-label">день</div>
+        <div class="cycle-ring-label" id="cycle-ring-label">день</div>
       </div>
     </div>
 
@@ -1320,10 +1320,9 @@ button,
     <div class="mini-title">Совет дня</div>
     <div class="home-tip-text" id="home-tip-text">Совет появится здесь</div>
   </div>
-   <button class="home-link-btn" onclick="showScreen('legal')">
+<button id="home-legal-btn" class="home-link-btn" onclick="showScreen('legal')">
   О приложении и документы
-  </button>
-</div>
+</button>
 
 <!-- ================= CALENDAR SCREEN ================= -->
 <div id="calendar-screen" class="screen hidden">
@@ -1577,9 +1576,8 @@ const I18N = {
     phase_tip_placeholder: "Совет появится здесь",
     months: [
     "Январь","Февраль","Март","Апрель","Май","Июнь",
-    "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь",
-    
-],
+    "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь",],
+    ring_day_label: "день",
   },
   en: {
     home_tab: "Today",
@@ -1637,9 +1635,8 @@ const I18N = {
     phase_tip_placeholder: "Tip will appear here",
     months: [
     "January","February","March","April","May","June",
-    "July","August","September","October","November","December",
-
-],
+    "July","August","September","October","November","December",],
+    ring_day_label: "day",
   }
 };    
 // ==== Отслеживание скролла ====
@@ -2527,6 +2524,8 @@ function applyStaticTranslations() {
   if (info && info.innerText === "Информация") {
     info.innerText = tr("info");
   }
+  const ringLabel = document.getElementById("cycle-ring-label");
+  if (ringLabel) ringLabel.innerText = tr("ring_day_label");
 }  
 // ==== Функция Вибрации ====  
     function vibrate(type = "light") {
