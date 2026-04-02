@@ -2169,88 +2169,93 @@ function setViewMode(mode) {
 
   tipEl.innerText = phase.tip;
 }
-    function render() {
-      const grid = document.getElementById("grid");
-      const month = document.getElementById("month");
 
-      grid.innerHTML = "";
 
-      const year = current.getFullYear();
-      const m = current.getMonth();
+  function render() {
+  const grid = document.getElementById("grid");
+  const month = document.getElementById("month");
 
-      const monthName = I18N[appLanguage]?.months[m] || I18N.ru.months[m];
+  if (!grid || !month) return;
 
-      const firstDay = new Date(year, m, 1).getDay();
-      const offset = firstDay === 0 ? 6 : firstDay - 1;
-      const daysInMonth = new Date(year, m + 1, 0).getDate();
+  grid.innerHTML = "";
 
-      const ovulation = getOvulation(lastStart);
-      const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
-      const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
-      const nextCycle = getNextCycleStart();
-      const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
+  const year = current.getFullYear();
+  const m = current.getMonth();
 
-      for (let i = 0; i < offset; i++) {
-        grid.appendChild(document.createElement("div"));
-      }
+  const monthName = I18N[appLanguage]?.months?.[m] || I18N.ru.months[m];
+  month.innerText = `${monthName} ${year}`;
 
-      for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(year, m, d);
-        const div = document.createElement("div");
-        div.classList.add("day");
+  const firstDay = new Date(year, m, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(year, m + 1, 0).getDate();
 
-        const diff = Math.floor(
-          (normalize(date) - normalize(lastStart)) / 86400000
-        );
+  const ovulation = getOvulation(lastStart);
+  const fertileStart = new Date(ovulation.getTime() - 4 * 86400000);
+  const fertileEnd = new Date(ovulation.getTime() + 1 * 86400000);
+  const nextCycle = getNextCycleStart();
+  const periodEnd = new Date(normalize(lastStart).getTime() + (periodLength - 1) * 86400000);
 
-        let cycleDay = null;
-        if (diff >= 0) {
-          cycleDay = (diff % cycleLength) + 1;
-        }
+  for (let i = 0; i < offset; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
 
-        div.innerHTML = `
-          <div class="day-number">${d}</div>
-          ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
-          <div class="cycle-dot normal"></div>
-        `;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, m, d);
+    const div = document.createElement("div");
+    div.classList.add("day");
 
-        const dot = div.querySelector(".cycle-dot");
-        const iso = formatISO(date);
+    const diff = Math.floor(
+      (normalize(date) - normalize(lastStart)) / 86400000
+    );
 
-        let baseStatus = "normal";
+    let cycleDay = null;
+    if (diff >= 0) {
+      cycleDay = (diff % cycleLength) + 1;
+    }
 
-        if (isBetween(date, lastStart, periodEnd)) {
-          baseStatus = "period";
-        } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
-          baseStatus = "ovulation";
-        } else if (isBetween(date, fertileStart, fertileEnd)) {
-          baseStatus = "fertile";
-        }
+    div.innerHTML = `
+      <div class="day-number">${d}</div>
+      ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
+      <div class="cycle-dot normal"></div>
+    `;
 
-        dot.className = `cycle-dot ${baseStatus}`;
-        dot.dataset.baseStatus = baseStatus;
+    const dot = div.querySelector(".cycle-dot");
+    const iso = formatISO(date);
 
-        if (selectedDays.includes(iso)) {
-          dot.className = "cycle-dot period";
-          dot.dataset.userSelected = "true";
-        } else {
-          dot.dataset.userSelected = "false";
-        }
+    let baseStatus = "normal";
 
-        if (normalize(date).getTime() === normalize(new Date()).getTime()) {
-          div.classList.add("today");
-        }
+    if (isBetween(date, lastStart, periodEnd)) {
+      baseStatus = "period";
+    } else if (normalize(date).getTime() === normalize(ovulation).getTime()) {
+      baseStatus = "ovulation";
+    } else if (isBetween(date, fertileStart, fertileEnd)) {
+      baseStatus = "fertile";
+    }
 
-        if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
-          div.style.border = "2px dashed #ff5c8a";
-        }
+    dot.className = `cycle-dot ${baseStatus}`;
+    dot.dataset.baseStatus = baseStatus;
+
+    if (selectedDays.includes(iso)) {
+      dot.className = "cycle-dot period";
+      dot.dataset.userSelected = "true";
+    } else {
+      dot.dataset.userSelected = "false";
+    }
+
+    if (normalize(date).getTime() === normalize(new Date()).getTime()) {
+      div.classList.add("today");
+    }
+
+    if (normalize(date).getTime() === normalize(nextCycle).getTime()) {
+      div.style.border = "2px dashed #ff5c8a";
+    }
 
     div.addEventListener("click", () => {
       showInfo(date);
     });
 
-let dayTouchStartX = 0;
-let dayTouchStartY = 0;
+    let dayTouchStartX = 0;
+    let dayTouchStartY = 0;
 
     div.addEventListener("touchstart", (e) => {
       const t = e.touches[0];
@@ -2317,9 +2322,10 @@ let dayTouchStartY = 0;
       vibrate("medium");
       openModal(date);
     });
-        grid.appendChild(div);
-      }
-    }
+
+    grid.appendChild(div);
+  }
+}
 // ==== Функция ПРЕДИКТА цикла showINFO data====
     function showInfo(date) {
       const status = document.getElementById("status");
@@ -2773,13 +2779,17 @@ function renderPhaseCard(date = new Date()) {
 
 
     applyStaticTranslations();
+
     render();
     renderStats();
+
+    const nowDate = new Date();
     renderFertilityCard(new Date()); // ==== При первой загрузке показать карточку ====
     renderPhaseCard(new Date()); // ==== При первой загрузке показать карточку ====
     renderHomeScreen(new Date());
     setViewMode(viewMode);
     launchFlowerRain();
+
     showScreen(activeScreen);
 
 
