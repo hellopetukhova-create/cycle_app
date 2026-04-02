@@ -1350,16 +1350,20 @@ button,
     <div class="segment-bg" id="segment-bg"></div>
   </div>
 
-  <!-- Календарь -->
-    <div class="weekdays">
-      <div id="wd-0">Пн</div>
-      <div id="wd-1">Вт</div>
-      <div id="wd-2">Ср</div>
-      <div id="wd-3">Чт</div>
-      <div id="wd-4">Пт</div>
-      <div id="wd-5">Сб</div>
-      <div id="wd-6">Вс</div>
-  </div>
+    <!-- Календарь -->
+    <div class="calendar">
+      <div class="weekdays">
+        <div id="wd-0">Пн</div>
+        <div id="wd-1">Вт</div>
+        <div id="wd-2">Ср</div>
+        <div id="wd-3">Чт</div>
+        <div id="wd-4">Пт</div>
+        <div id="wd-5">Сб</div>
+        <div id="wd-6">Вс</div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+    </div>
 
   <div id="year-view" class="year-view hidden">
     <div class="year-placeholder">
@@ -1509,8 +1513,8 @@ button,
 
     <button class="legal-back-btn" onclick="showScreen('home')">Назад</button>
     <div class="legal-screen" class="screen hidden">
-     © 2026 [Петухова Олеся Игоревна/ My Period Trackier]
-        Все права защищены
+     © 2026 [Petukhova O.I./ My.Period Bot]
+      Все права защищены
     </div>    
   </div>
 </div>
@@ -1706,11 +1710,6 @@ document.addEventListener("selectionchange", () => {
     let periodLength = 5;
     let lastStart = new Date("2026-03-13");
     let cyclesHistory = [];
-
-    const monthNames = [
-      "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-    ];
 // ==== Функция подтверждения цикла ====
 function confirmCycleStart() {
   if (!modalDate) return;
@@ -2131,7 +2130,8 @@ function setViewMode(mode) {
   const phase = getCyclePhaseInfo(date);
 
   const d = date.getDate();
-  const m = date.toLocaleString("ru-RU", { month: "short" });
+  const locale = appLanguage === "en" ? "en-US" : "ru-RU";
+  const m = date.toLocaleString(locale, { month: "short" });
   dateEl.innerText = `${d} ${m}`;
 
   phaseEl.innerText = phase.icon ? `${phase.icon} ${phase.title}` : phase.title;
@@ -2780,18 +2780,18 @@ function renderPhaseCard(date = new Date()) {
 
     applyStaticTranslations();
 
+    const nowDate = new Date();
+
     render();
     renderStats();
-
-    const nowDate = new Date();
-    renderFertilityCard(new Date()); // ==== При первой загрузке показать карточку ====
-    renderPhaseCard(new Date()); // ==== При первой загрузке показать карточку ====
-    renderHomeScreen(new Date());
-    setViewMode(viewMode);
     launchFlowerRain();
+    renderFertilityCard(nowDate);
+    renderPhaseCard(nowDate);
+    renderHomeScreen(nowDate);
+    showInfo(nowDate);
 
     showScreen(activeScreen);
-
+  
 
 function renderYear() {
   const yearView = document.getElementById("year-view");
@@ -2957,6 +2957,6 @@ function renderStats() {
 </html>
 
 <!--
-© 2026 [Петухова Олеся Игоревна/ My Period Trackier]
+© 2026 [Petukhova O.I./ My.Period Bot]
 Все права защищены
 -->
