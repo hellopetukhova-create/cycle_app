@@ -1630,14 +1630,12 @@ const I18N = {
     менструации, историю циклов и отмеченные дни.
 
     Эти данные используются только для работы функций приложения: календаря,
-    прогнозов, статистики, синхронизации mini-app с ботом и напоминаний.
+    прогнозов, статистики и напоминаний.
 
-    Данные сохраняются на сервере приложения в защищённой базе данных и
-    не публикуются в открытом доступе.
+    Данные не публикуются в открытом доступе и не передаются третьим лицам
+    в маркетинговых целях.
 
-    Данные не передаются третьим лицам в маркетинговых целях.
-
-    Пользователь может запросить удаление своих данных через бота.`,
+    Пользователь может запросить удаление своих данных.`,
     terms_text: `Приложение предназначено для отслеживания цикла, хранения пользовательских
     данных и отображения прогнозов.
 
@@ -1715,14 +1713,12 @@ const I18N = {
     cycle history, and marked days.
 
     This data is used only for app features such as calendar,
-    predictions, statistics, mini-app and bot synchronization, and reminders.
+    predictions, statistics, and reminders.
 
-    The data is stored on the application server in a protected database
-    and is not made public.
+    The data is not made public and is not shared with third parties
+    for marketing purposes.
 
-    The data is not shared with third parties for marketing purposes.
-
-    The user may request deletion of their data via the bot.`,
+    The user may request deletion of their data.`,
     terms_text: `The app is designed for cycle tracking, storing user data,
     and showing predictions.
 
@@ -2011,109 +2007,6 @@ function showScreen(screen) {
 
       return date.toLocaleDateString("ru-RU");
     }
-	
-	function isValidDate(value) {
-      if (!value) return false;
-      const d = new Date(value);
-      return !Number.isNaN(d.getTime());
-    }
-
-    function isIsoDateString(value) {
-      return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
-    }
-
-    function normalizeMarkedDays(days) {
-      if (!Array.isArray(days)) return [];
-      return days
-        .filter(d => typeof d === "string" && isIsoDateString(d))
-        .filter((d, i, arr) => arr.indexOf(d) === i)
-        .sort();
-    }
-
-    function normalizeCyclesHistory(history) {
-      if (!Array.isArray(history)) return [];
-      return history
-        .filter(item => item && typeof item === "object" && isIsoDateString(item.start_date))
-        .map(item => ({
-          start_date: item.start_date,
-          period_length: Number.isFinite(Number(item.period_length)) ? Number(item.period_length) : null,
-          cycle_length: Number.isFinite(Number(item.cycle_length)) ? Number(item.cycle_length) : null
-        }))
-        .sort((a, b) => a.start_date.localeCompare(b.start_date));
-    }
-
-    function clampInt(value, min, max, fallback) {
-      const n = Number(value);
-      if (!Number.isFinite(n)) return fallback;
-      const i = Math.round(n);
-      if (i < min || i > max) return fallback;
-      return i;
-    }
-
-    function normalizeIncomingData(raw) {
-      const safe = raw && typeof raw === "object" ? raw : {};
-
-      return {
-        language: safe.language === "en" ? "en" : "ru",
-        cycle_length: clampInt(safe.cycle_length, 15, 60, 28),
-        period_length: clampInt(safe.period_length, 2, 10, 5),
-        last_start: isIsoDateString(safe.last_start) ? safe.last_start : null,
-        marked_days: normalizeMarkedDays(safe.marked_days),
-        cycles_history: normalizeCyclesHistory(safe.cycles_history)
-      };
-    }
-	
-	function isValidDate(value) {
-		if (!value) return false;
-			const d = new Date(value);
-		return !Number.isNaN(d.getTime());
-	}
-
-	function isIsoDateString(value) {
-		return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
-	}
-
-	function normalizeMarkedDays(days) {
-		if (!Array.isArray(days)) return [];
-			return days
-				.filter(d => typeof d === "string" && isIsoDateString(d))
-				.filter((d, i, arr) => arr.indexOf(d) === i)
-				.sort();
-	}
-
-	function normalizeCyclesHistory(history) {
-		if (!Array.isArray(history)) return [];
-			return history
-				.filter(item => item && typeof item === "object" && isIsoDateString(item.start_date))
-				.map(item => ({
-				start_date: item.start_date,
-				period_length: Number.isFinite(Number(item.period_length)) ? Number(item.period_length) : null,
-				cycle_length: Number.isFinite(Number(item.cycle_length)) ? Number(item.cycle_length) : null
-				}))
-				.sort((a, b) => a.start_date.localeCompare(b.start_date));
-	}
-
-	function clampInt(value, min, max, fallback) {
-		const n = Number(value);
-		if (!Number.isFinite(n)) 
-			return fallback;
-		const i = Math.round(n);
-		if (i < min || i > max) return fallback;
-			return i;
-	}
-
-	function normalizeIncomingData(raw) {
-		const safe = raw && typeof raw === "object" ? raw : {};
-
-		return {
-			language: safe.language === "en" ? "en" : "ru",
-			cycle_length: clampInt(safe.cycle_length, 15, 60, 28),
-			period_length: clampInt(safe.period_length, 2, 10, 5),
-			last_start: isIsoDateString(safe.last_start) ? safe.last_start : null,
-			marked_days: normalizeMarkedDays(safe.marked_days),
-			cycles_history: normalizeCyclesHistory(safe.cycles_history)
-		};
-	}
 
     function setSaveStatus(text) {
       const statusEl = document.getElementById("save-status");
@@ -2141,17 +2034,13 @@ function showScreen(screen) {
       try {
         const state = JSON.parse(raw);
 
-        activeScreen =
-          state.activeScreen === "calendar" || state.activeScreen === "legal"
-            ? state.activeScreen
-            : "home";
-
-        selectedDays = normalizeMarkedDays(state.selectedDays);
-        cycleLength = clampInt(state.cycleLength, 15, 60, cycleLength);
-        periodLength = clampInt(state.periodLength, 2, 10, periodLength);
-        lastStart = isValidDate(state.lastStart) ? new Date(state.lastStart) : lastStart;
-        viewMode = state.viewMode === "year" ? "year" : "month";
-        cyclesHistory = normalizeCyclesHistory(state.cyclesHistory);
+        activeScreen = state.activeScreen ?? "home";
+        selectedDays = Array.isArray(state.selectedDays) ? state.selectedDays : [];
+        cycleLength = state.cycleLength ?? cycleLength;
+        periodLength = state.periodLength ?? periodLength;
+        lastStart = state.lastStart ? new Date(state.lastStart) : lastStart;
+        viewMode = state.viewMode ?? "month";
+        cyclesHistory = Array.isArray(state.cyclesHistory) ? state.cyclesHistory : [];
       } catch (error) {
         console.error("Ошибка чтения localStorage:", error);
       }
@@ -2630,14 +2519,11 @@ function setViewMode(mode) {
       }
 
       try {
-		const payload = {
-			type: "save_cycle",
-			days: normalizeMarkedDays(selectedDays),
-			last_start: lastStart ? formatISO(lastStart) : null,
-			cycle_length: clampInt(cycleLength, 15, 60, 28),
-			period_length: clampInt(periodLength, 2, 10, 5),
-			cycles_history: normalizeCyclesHistory(cyclesHistory)
-		};
+        const payload = {
+          type: "save_cycle",
+          days: selectedDays,
+          last_start: formatISO(lastStart)
+        };
 
         tg.sendData(JSON.stringify(payload));
         setSaveStatus(tr("save_sent"));
