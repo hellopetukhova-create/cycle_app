@@ -1455,26 +1455,26 @@ button,
 <div id="legal-screen" class="screen hidden">
   <div class="legal-wrap">
     <div class="legal-hero">
-      <div class="legal-label">Документы</div>
-      <div class="legal-title">О приложении</div>
-      <div class="legal-subtitle">
+      <div class="legal-label" id="legal-label">Документы</div>
+      <div class="legal-title" id="legal-title">О приложении</div>
+      <div class="legal-subtitle" id="legal-subtitle">
         Здесь можно посмотреть политику конфиденциальности и условия использования.
       </div>
     </div>
 
     <div class="legal-actions">
-      <button class="legal-nav-btn" onclick="showLegalPage('privacy')">
+      <button class="legal-nav-btn" id="privacy-btn" onclick="showLegalPage('privacy')">
         Политика конфиденциальности
       </button>
-      <button class="legal-nav-btn" onclick="showLegalPage('terms')">
+      <button class="legal-nav-btn" id="terms-btn" onclick="showLegalPage('terms')">
         Пользовательское соглашение
       </button>
     </div>
 
     <div id="legal-content" class="legal-card">
       <div class="legal-page hidden" id="privacy-page">
-        <div class="legal-page-title">Политика конфиденциальности</div>
-        <div class="legal-text">
+        <div class="legal-page-title" id="privacy-page-title">Политика конфиденциальности</div>
+        <div class="legal-text" id="privacy-page-text">
           Мы обрабатываем только те данные, которые необходимы для работы приложения:
           имя профиля, возраст, дату начала цикла, длительность цикла, длительность
           менструации, историю циклов и отмеченные дни.
@@ -1490,8 +1490,8 @@ button,
       </div>
 
       <div class="legal-page hidden" id="terms-page">
-        <div class="legal-page-title">Пользовательское соглашение</div>
-        <div class="legal-text">
+        <div class="legal-page-title" id="terms-page-title">Пользовательское соглашение</div>
+        <div class="legal-text" id="terms-page-text">
           Приложение предназначено для отслеживания цикла, хранения пользовательских
           данных и отображения прогнозов.
 
@@ -1510,11 +1510,7 @@ button,
       </div>
     </div>
 
-    <button class="legal-back-btn" onclick="showScreen('home')">Назад</button>
-    <div class="legal-screen screen hidden">     
-      © 2026 [Petukhova O.I./ My.Period Bot]
-      Все права защищены
-    </div>    
+    <button class="legal-back-btn" id="legal-back-btn" onclick="showScreen('home')">Назад</button>
   </div>
 </div>
   <script>
@@ -1578,6 +1574,29 @@ const I18N = {
     "Январь","Февраль","Март","Апрель","Май","Июнь",
     "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь",],
     ring_day_label: "день",
+    privacy_page_title: "Политика конфиденциальности",
+    terms_page_title: "Пользовательское соглашение",
+    privacy_text: `Мы обрабатываем только те данные, которые необходимы для работы приложения:
+    имя профиля, возраст, дату начала цикла, длительность цикла, длительность
+    менструации, историю циклов и отмеченные дни.
+
+    Эти данные используются только для работы функций приложения: календаря,
+    прогнозов, статистики и напоминаний.
+
+    Данные не публикуются в открытом доступе и не передаются третьим лицам
+    в маркетинговых целях.
+
+    Пользователь может запросить удаление своих данных.`,
+    terms_text: `Приложение предназначено для отслеживания цикла, хранения пользовательских
+    данных и отображения прогнозов.
+
+    Все расчёты и прогнозы носят ориентировочный характер и не являются
+    медицинской рекомендацией.
+
+    Приложение не заменяет консультацию врача.
+
+    Используя приложение, пользователь соглашается с тем, что сервис
+    предоставляется в информационных целях.`,
   },
   en: {
     home_tab: "Today",
@@ -1637,6 +1656,29 @@ const I18N = {
     "January","February","March","April","May","June",
     "July","August","September","October","November","December",],
     ring_day_label: "day",
+    privacy_page_title: "Privacy Policy",
+    terms_page_title: "Terms of Use",
+    privacy_text: `We process only the data required for the app to function:
+    profile name, age, cycle start date, cycle length, period length,
+    cycle history, and marked days.
+
+    This data is used only for app features such as calendar,
+    predictions, statistics, and reminders.
+
+    The data is not made public and is not shared with third parties
+    for marketing purposes.
+
+    The user may request deletion of their data.`,
+    terms_text: `The app is designed for cycle tracking, storing user data,
+    and showing predictions.
+
+    All calculations and predictions are approximate
+    and do not constitute medical advice.
+
+    The app does not replace consultation with a doctor.
+
+    By using the app, the user agrees that the service
+    is provided for informational purposes only.`,
   }
 };    
 // ==== Отслеживание скролла ====
@@ -2536,6 +2578,24 @@ function applyStaticTranslations() {
   }
   const ringLabel = document.getElementById("cycle-ring-label");
   if (ringLabel) ringLabel.innerText = tr("ring_day_label");
+
+const privacyPageTitle = document.getElementById("privacy-page-title");
+const termsPageTitle = document.getElementById("terms-page-title");
+const privacyPageText = document.getElementById("privacy-page-text");
+const termsPageText = document.getElementById("terms-page-text");
+
+
+if (legalLabel) legalLabel.innerText = tr("legal_docs");
+if (legalTitle) legalTitle.innerText = tr("about_app");
+if (legalSubtitle) legalSubtitle.innerText = tr("legal_subtitle");
+if (privacyBtn) privacyBtn.innerText = tr("privacy");
+if (termsBtn) termsBtn.innerText = tr("terms");
+if (privacyPageTitle) privacyPageTitle.innerText = tr("privacy_page_title");
+if (termsPageTitle) termsPageTitle.innerText = tr("terms_page_title");
+if (privacyPageText) privacyPageText.innerText = tr("privacy_text");
+if (termsPageText) termsPageText.innerText = tr("terms_text");
+if (legalEmpty) legalEmpty.innerText = tr("choose_doc");
+if (legalBackBtn) legalBackBtn.innerText = tr("back");
 }  
 // ==== Функция Вибрации ====  
     function vibrate(type = "light") {
