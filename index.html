@@ -2596,6 +2596,9 @@ if (privacyPageText) privacyPageText.innerText = tr("privacy_text");
 if (termsPageText) termsPageText.innerText = tr("terms_text");
 if (legalEmpty) legalEmpty.innerText = tr("choose_doc");
 if (legalBackBtn) legalBackBtn.innerText = tr("back");
+
+const homeLegalBtn = document.getElementById("home-legal-btn");
+if (homeLegalBtn) homeLegalBtn.innerText = tr("app_docs");
 }  
 // ==== Функция Вибрации ====  
     function vibrate(type = "light") {
