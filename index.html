@@ -1939,6 +1939,7 @@ function setViewMode(mode) {
   const cycleCard = document.querySelector(".card");
   const fertilityCard = document.querySelector(".fertility-card");
   const phaseCard = document.querySelector(".phase-card");
+  const statsCard = document.querySelector(".stats-card");
 
   // добавляем базовый класс
   calendar.classList.add("view-anim");
@@ -1948,6 +1949,7 @@ function setViewMode(mode) {
     // 👉 скрываем год
     yearView.classList.remove("view-visible");
     yearView.classList.add("view-hidden");
+    statsCard?.classList.remove("hidden");
 
     setTimeout(() => {
       yearView.classList.add("hidden");
@@ -1991,6 +1993,7 @@ function setViewMode(mode) {
     cycleCard?.classList.add("hidden");
     fertilityCard?.classList.add("hidden");
     phaseCard?.classList.add("hidden");
+    statsCard?.classList.add("hidden");
 
     monthBtn.classList.remove("active");
     yearBtn.classList.add("active");
@@ -2212,7 +2215,7 @@ function setViewMode(mode) {
 
     div.innerHTML = `
       <div class="day-number">${d}</div>
-      ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : `<div class="cycle-day"></div>`}
+      ${cycleDay ? `<div class="cycle-day">${cycleDay}</div>` : ``}
       <div class="cycle-dot normal"></div>
     `;
 
@@ -2789,6 +2792,7 @@ function renderPhaseCard(date = new Date()) {
     renderHomeScreen(nowDate);
     showInfo(nowDate);
 
+    setViewMode(viewMode);
     showScreen(activeScreen);
   
 
@@ -2811,7 +2815,8 @@ function renderYear() {
 
     const title = document.createElement("div");
     title.classList.add("year-month-title");
-    title.innerText = monthNames[m];
+    const monthName = I18N[appLanguage]?.months?.[m] || I18N.ru.months[m];
+    title.innerText = monthName;
 
     const grid = document.createElement("div");
     grid.classList.add("year-grid");
@@ -2820,7 +2825,6 @@ function renderYear() {
 
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, m, d);
-
       const dot = document.createElement("div");
       dot.classList.add("year-dot");
 
@@ -2830,7 +2834,6 @@ function renderYear() {
 
       if (diff >= 0) {
         const cycleDay = (diff % cycleLength) + 1;
-
         if (cycleDay <= periodLength) {
           dot.classList.add("period");
         }
