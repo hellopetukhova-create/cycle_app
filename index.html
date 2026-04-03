@@ -1380,9 +1380,9 @@ body {
 
   <!-- Месяц и стрелки -->
   <div class="calendar-header">
-    <button class="nav-btn" onclick="prevMonth()">←</button>
+    <button class="nav-btn" onclick="prevPeriod()">←</button>
     <div id="month" class="month-title"></div>
-    <button class="nav-btn" onclick="nextMonth()">→</button>
+    <button class="nav-btn" onclick="nextPeriod()">→</button>
   </div>
 
   <!-- Кнопка сегодня -->
@@ -1984,6 +1984,14 @@ function showScreen(screen) {
 
     function goToday() {
       const today = new Date();
+
+      if (viewMode === "year") {
+        current = new Date(today.getFullYear(), 0, 1);
+        renderYear();
+        showInfo(today);
+        return;
+      }
+
       current = new Date(today.getFullYear(), today.getMonth(), 1);
       render();
       showInfo(today);
@@ -2230,6 +2238,7 @@ function setViewMode(mode) {
     yearBtn.classList.remove("active");
 
     bg.style.transform = "translateX(0%)";
+	updateCalendarTitle();
   } else {
     // 👉 скрываем месяц
     calendar.classList.remove("view-visible");
@@ -2258,6 +2267,7 @@ function setViewMode(mode) {
     yearBtn.classList.add("active");
 
     bg.style.transform = "translateX(100%)";
+	updateCalendarTitle();
   }
 
   saveToLocal();
@@ -2321,14 +2331,30 @@ function setViewMode(mode) {
       closeModal();
     }
 
-    function prevMonth() {
+    function prevPeriod() {
+      if (viewMode === "year") {
+        current = new Date(current.getFullYear() - 1, 0, 1);
+        renderYear();
+        updateCalendarTitle();
+        return;
+      }
+
       current = new Date(current.getFullYear(), current.getMonth() - 1, 1);
       render();
+      updateCalendarTitle();
     }
 
-    function nextMonth() {
+    function nextPeriod() {
+      if (viewMode === "year") {
+        current = new Date(current.getFullYear() + 1, 0, 1);
+        renderYear();
+        updateCalendarTitle();
+        return;
+      }
+
       current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
       render();
+      updateCalendarTitle();
     }
 
     function getNextCycleStart() {
@@ -2428,8 +2454,20 @@ function setViewMode(mode) {
   tipEl.innerText = phase.tip;
 }
 
+  function updateCalendarTitle() {
+      const titleEl = document.getElementById("month");
+      if (!titleEl) 
+		return;
+      if (viewMode === "year") {
+        titleEl.innerText = String(current.getFullYear());
+        return;
+      }
+      const monthName = I18N[appLanguage]?.months?.[current.getMonth()] || I18N.ru.months[current.getMonth()];
+      titleEl.innerText = `${monthName} ${current.getFullYear()}`;
+  }
 
   function render() {
+  updateCalendarTitle();
   const grid = document.getElementById("grid"); 
   const month = document.getElementById("month");
 
@@ -3082,6 +3120,8 @@ function renderPhaseCard(date = new Date()) {
 function renderYear() {
   const yearView = document.getElementById("year-view");
   yearView.innerHTML = "";
+  
+  updateCalendarTitle();
 
   const year = current.getFullYear();
   const today = new Date();
