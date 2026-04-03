@@ -7,28 +7,137 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-  /* Липкий header */
+/* ================= THEME VARIABLES ================= */
+:root {
+  --bg-main: #ffffff;
+
+  --text-main: #222222;
+  --text-secondary: #777777;
+  --text-light: #9a9a9a;
+
+  --accent: #7b6cff;
+  --accent-strong: #6c5ce7;
+
+  --card-bg: #ffffff;
+  --card-soft: #f9f9f9;
+
+  --chip-bg: #f3f3f3;
+  --border: #f0f0f0;
+}
+
+/* 🌿 BEIGE THEME */
+[data-theme="beige"] {
+  --bg-main: #f7f3ef;
+
+  --text-main: #2b2b2b;
+  --text-secondary: #7a6f66;
+  --text-light: #b3a79f;
+
+  --accent: #c8a98d;
+  --accent-strong: #b38b6d;
+
+  --card-bg: #ffffff;
+  --card-soft: #f3ece6;
+
+  --chip-bg: #f1e7df;
+  --border: #ece3dc;
+}
+
+/* ================= SAFE OVERRIDES ================= */
+
+/* фон приложения */
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* карточки — НЕ ломает твои классы */
+.card,
+.fertility-card,
+.phase-card,
+.stats-card,
+.home-mini-card,
+.home-tip-card,
+.legal-card {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+
+/* вторичный текст */
+.small,
+.stats-label,
+.fertility-text,
+.phase-text {
+  color: var(--text-secondary);
+}
+
+/* слабый текст */
+.mini-title {
+  color: var(--text-light);
+}
+
+/* акцент (важные цифры / фаза) */
+.home-phase,
+.mini-value {
+  color: var(--accent);
+}
+
+/* кнопка сохранить */
+.save-btn {
+  background: var(--accent-strong);
+}
+
+/* переключатели */
+.top-switch,
+.segmented-control {
+  background: var(--chip-bg);
+}
+
+/* ================= THEME SWITCH ================= */
+
+.theme-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px auto 14px;
+}
+
+.theme-btn {
+  border: none;
+  background: var(--chip-bg);
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme-btn.active {
+  background: var(--accent-strong);
+  color: #ffffff;
+}
+/* Липкий header */
 .top-switch {
   display: flex;
   width: 220px;
   margin: 10px auto 14px;
-  background: #f3f3f3;
+  background: var(--chip-bg);
   border-radius: 14px;
   padding: 3px;
   transition: all 0.25s ease;
 }
 
-/* sticky включается только на экране календаря */
 .top-switch.sticky-switch {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.88);
+  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
   backdrop-filter: blur(10px);
 }
 
 .top-switch.sticky-switch.scrolled {
-  background: rgba(255, 255, 255, 0.96);
+  background: color-mix(in srgb, var(--card-bg) 96%, transparent);
   backdrop-filter: blur(14px);
   transform: scale(0.96);
   margin-top: 4px;
@@ -54,9 +163,11 @@ button {
   user-select: none;
   -webkit-touch-callout: none;
 }
+
 .day {
   touch-action: manipulation;
 }
+
 .day,
 .day * {
   -webkit-user-select: none;
@@ -64,6 +175,7 @@ button {
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 }
+
 .day,
 button,
 .nav-btn,
@@ -74,101 +186,103 @@ button,
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
 }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #ffffff;
-      color: #222;
-    }
 
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
 
-    .calendar {
-      background: white;
-      border-radius: 20px;
-      padding: 10px;
-      margin: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
+.calendar {
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px;
+  animation: fadeIn 0.25s ease;
+}
 
-    .weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      text-align: center;
-      color: #999;
-      font-size: 12px;
-      margin-bottom: 6px;
-    }
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  color: var(--text-light);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
-    }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
 
-    .day {
-      height: 56px;
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      position: relative;
-      border: 1px solid #f1f1f1;
-      background: #ffffff;
-      transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-    }
+.day {
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
 
-    .day:active {
+.day:active {
   transform: scale(0.95);
-    }
+}
 
-    .day-number {
-      font-size: 13px;
-      color: #333;
-      line-height: 1;
-    }
+.day-number {
+  font-size: 13px;
+  color: var(--text-main);
+  line-height: 1;
+}
 
-    .cycle-day {
-      font-size: 10px;
-      color: #a0a0a0;
-      line-height: 1;
-      margin-top: 3px;
-    }
+.cycle-day {
+  font-size: 10px;
+  color: var(--text-light);
+  line-height: 1;
+  margin-top: 3px;
+}
 
-    .cycle-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-top: 5px;
-      background: #e9e9e9;
-      transition: all 0.2s ease;
-    }
+.cycle-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  background: var(--chip-bg);
+  transition: all 0.2s ease;
+}
 
-    .cycle-dot.normal {
-      background: #e9e9e9;
-    }
+.cycle-dot.normal {
+  background: var(--chip-bg);
+}
 
-    .cycle-dot.period {
-      background: #ff5c8a;
-    }
+.cycle-dot.period {
+  background: #ff5c8a;
+}
 
-    .cycle-dot.ovulation {
-      background: #6c5ce7;
-    }
+.cycle-dot.ovulation {
+  background: var(--accent-strong);
+}
 
-    .cycle-dot.fertile {
-      background: #ffd1dc;
-    }
-    .today-btn {
-  background: #f5f5f5;
+.cycle-dot.fertile {
+  background: var(--accent-soft);
+}
+
+.today-btn {
+  background: transparent;
   border: none;
   padding: 6px 12px;
   border-radius: 12px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -178,234 +292,231 @@ button,
 }
 
 .today-btn:hover {
-  background: #eeeeee;
+  background: var(--chip-bg);
 }
-    .today {
-      border: 2px solid #111;
-    }
 
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 15px;
-      margin: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
+.today {
+  border: 2px solid var(--text-main);
+}
 
-    .big {
-      font-size: 18px;
-      font-weight: 600;
-      text-align: center;
-      color: #000;
-    }
+.card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 15px;
+  margin: 10px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
 
-    .small {
-      font-size: 14px;
-      font-weight: 600;
-      text-align: center;
-      color: #888;
-      white-space: pre-line;
-    }
+.big {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-main);
+}
 
-    .nav-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #222;
-    }
+.small {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
 
-    .save-status {
-      margin: 12px 10px 10px;
-      font-size: 14px;
-      color: #888;
-      text-align: center;
-      white-space: pre-line;
-    }
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-main);
+}
 
-    .save-btn {
-      display: block;
-      width: calc(100% - 20px);
-      margin: 0 10px 20px;
-      padding: 14px 16px;
-      border: none;
-      border-radius: 16px;
-      background: #111;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
+.save-status {
+  margin: 12px 10px 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: pre-line;
+}
 
-    .save-btn:active {
-      transform: scale(0.97);
-    }
-    .save-btn {
-      margin-top: 8px;
-    }
+.save-btn {
+  display: block;
+  width: calc(100% - 20px);
+  margin: 8px 10px 20px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 16px;
+  background: var(--accent-strong);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
 
-    .save-status {
-      margin-top: 8px;
-    }
+.save-btn:active {
+  transform: scale(0.97);
+}
+
 /* Модалка */
-    .modal {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding-top: 120px; /* 👈 регулируешь высоту */
-      background: rgba(0, 0, 0, 0.12);
-      z-index: 1000;
-    }
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+}
 
-    .modal-box {
-      width: 90%;
-      max-width: 320px;
-      background: white;
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
-      animation: modalFadeIn 0.2s ease;
-    }
-    .modal-action,
-    .modal-cancel {
-      width: 100%;
-      background: white;
-      border: none;
-      border-bottom: 1px solid #ececec;
-      padding: 16px 14px;
-      font-size: 18px;
-      color: #007aff;
-      cursor: pointer;
-    }
+.modal-box {
+  width: 90%;
+  max-width: 320px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  animation: modalFadeIn 0.2s ease;
+  border: 1px solid var(--border);
+}
 
-    .modal-cancel {
-      margin-top: 0;
-      border-bottom: none;
-      font-weight: 500;
-    }
-    .modal-title {
-      background: #f7f7f7;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: #666;
-      padding: 14px 12px 10px;
-    }
-    @keyframes modalFadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
+.modal-action,
+.modal-cancel {
+  width: 100%;
+  background: var(--card-bg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 14px;
+  font-size: 18px;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
 
+.modal-cancel {
+  margin-top: 0;
+  border-bottom: none;
+  font-weight: 500;
+}
 
+.modal-title {
+  background: var(--card-soft);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 14px 12px 10px;
+}
 
-    #month {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .view-switch {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin: 0 10px 10px;
-    }
-
-    .view-btn {
-      border: none;
-      background: #f3f3f3;
-      color: #555;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .view-btn.active {
-      background: #111;
-      color: white;
-    }
-
-    .year-view {
-      background: white;
-      border-radius: 20px;
-      margin: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-      padding: 10px;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .year-view:not(.hidden) {
-      display: grid;
-    }
-
-    .year-placeholder {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      color: #777;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .year-month {
-      background: #fff;
-      border-radius: 16px;
-      padding: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .year-month-title {
-      font-size: 12px;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 6px;
-    }
-
-    .year-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-    }
-
-    .year-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #eee;
-    }
-
-    .year-dot.period {
-      background: #ff5c8a;
-    }
-
-    .calendar {
-    animation: fadeIn 0.25s ease;
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
   }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
+}
 
-  .petal-rain {
+#month {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.view-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 10px 10px;
+}
+
+.view-btn {
+  border: none;
+  background: var(--chip-bg);
+  color: var(--text-secondary);
+  padding: 10px 18px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn.active {
+  background: var(--accent-strong);
+  color: white;
+}
+
+.year-view {
+  background: var(--card-bg);
+  border-radius: 20px;
+  margin: 10px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.year-view:not(.hidden) {
+  display: grid;
+}
+
+.year-placeholder {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.year-month {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+}
+
+.year-month-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 6px;
+  color: var(--text-main);
+}
+
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.year-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chip-bg);
+}
+
+.year-dot.period {
+  background: #ff5c8a;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.petal-rain {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -431,8 +542,7 @@ button,
 .today-row {
   display: flex;
   justify-content: center;
-  margin-top: -5px;
-  margin-bottom: 5px;
+  margin: 2px 0 10px;
 }
 
 @keyframes fallFlower {
@@ -440,35 +550,32 @@ button,
     transform: translate3d(0, -80px, 0) rotate(0deg) scale(0.9);
     opacity: 0;
   }
-
   10% {
     opacity: 0.95;
   }
-
   30% {
     transform: translate3d(14px, 28vh, 0) rotate(80deg) scale(1);
   }
-
   55% {
     transform: translate3d(-10px, 55vh, 0) rotate(160deg) scale(0.96);
   }
-
   80% {
     transform: translate3d(16px, 85vh, 0) rotate(240deg) scale(1.02);
     opacity: 0.85;
   }
-
   100% {
     transform: translate3d(-12px, 110vh, 0) rotate(320deg) scale(0.95);
     opacity: 0;
   }
 }
-  .stats-card {
-  background: white;
+
+.stats-card {
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 16px;
   margin: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .stats-title {
@@ -476,6 +583,7 @@ button,
   font-weight: 600;
   text-align: center;
   margin-bottom: 14px;
+  color: var(--text-main);
 }
 
 .stats-summary {
@@ -486,28 +594,29 @@ button,
 }
 
 .stats-item {
-  background: #fafafa;
+  background: var(--card-soft);
   border-radius: 14px;
   padding: 12px 8px;
   text-align: center;
+  border: 1px solid var(--border);
 }
 
 .stats-value {
   font-size: 18px;
   font-weight: 700;
-  color: #111;
+  color: var(--text-main);
   margin-bottom: 4px;
 }
 
 .stats-label {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .chart-title {
   font-size: 14px;
   font-weight: 600;
-  color: #444;
+  color: var(--text-main);
   margin-bottom: 10px;
 }
 
@@ -530,20 +639,20 @@ button,
   width: 100%;
   max-width: 28px;
   border-radius: 10px 10px 6px 6px;
-  background: linear-gradient(180deg, #ff9db7 0%, #ff5c8a 100%);
+  background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent-strong) 100%);
   min-height: 8px;
   transition: height 0.25s ease;
 }
 
 .chart-bar-label {
   font-size: 11px;
-  color: #888;
+  color: var(--text-secondary);
   margin-top: 8px;
 }
 
 .chart-bar-value {
   font-size: 11px;
-  color: #444;
+  color: var(--text-main);
   margin-bottom: 6px;
 }
 
@@ -559,33 +668,7 @@ button,
   text-align: center;
   font-size: 15px;
   font-weight: 500;
-  color: #444;
-}
-
-.nav-btn {
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  color: #222;
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.today-row {
-  display: flex;
-  justify-content: center;
-  margin: 2px 0 10px;
-}
-
-.today-btn {
-  background: transparent;
-  color: #9a9a9a;
-  padding: 2px 6px;
-  font-size: 12px;
-}
-
-.today-btn:active {
-  transform: scale(0.96);
+  color: var(--text-main);
 }
 
 .segmented-control {
@@ -593,7 +676,7 @@ button,
   display: flex;
   width: 210px;
   margin: 0 auto 12px;
-  background: #f3f3f3;
+  background: var(--chip-bg);
   border-radius: 14px;
   padding: 3px;
 }
@@ -604,14 +687,14 @@ button,
   padding: 8px 0;
   font-size: 13px;
   font-weight: 600;
-  color: #7a7a7a;
+  color: var(--text-secondary);
   z-index: 2;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .segment.active {
-  color: #1f1f1f;
+  color: var(--text-main);
 }
 
 .segment-bg {
@@ -620,7 +703,7 @@ button,
   left: 3px;
   width: calc(50% - 3px);
   height: calc(100% - 6px);
-  background: white;
+  background: var(--card-bg);
   border-radius: 11px;
   transition: transform 0.25s ease;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
@@ -628,11 +711,12 @@ button,
 
 /* Стиль ФЕРТИЛЬНОСТЬ */
 .fertility-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 16px;
   margin: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .fertility-header {
@@ -645,7 +729,7 @@ button,
 .fertility-title {
   font-size: 18px;
   font-weight: 600;
-  color: #222;
+  color: var(--text-main);
 }
 
 .fertility-badge {
@@ -653,8 +737,8 @@ button,
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: #f3f3f3;
-  color: #666;
+  background: var(--chip-bg);
+  color: var(--text-secondary);
 }
 
 .fertility-main {
@@ -667,7 +751,7 @@ button,
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: #fafafa;
+  background: var(--card-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -687,23 +771,23 @@ button,
 
 .fertility-text {
   font-size: 14px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.4;
   white-space: pre-line;
 }
 
 .fertility-tip {
   margin-top: 14px;
-  background: #fafafa;
+  background: var(--card-soft);
   border-radius: 14px;
   padding: 12px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .fertility-low {
-  color: #9a9a9a;
+  color: var(--text-light);
 }
 
 .fertility-medium {
@@ -711,16 +795,16 @@ button,
 }
 
 .fertility-high {
-  color: #ff5c8a;
+  color: var(--accent-strong);
 }
 
 .fertility-peak {
-  color: #6c5ce7;
+  color: var(--accent);
 }
 
 .badge-low {
-  background: #f1f1f1;
-  color: #7d7d7d;
+  background: var(--chip-bg);
+  color: var(--text-secondary);
 }
 
 .badge-medium {
@@ -729,22 +813,23 @@ button,
 }
 
 .badge-high {
-  background: #ffe3ec;
-  color: #e75480;
+  background: color-mix(in srgb, var(--accent-soft) 70%, white);
+  color: var(--accent-strong);
 }
 
 .badge-peak {
-  background: #ece8ff;
-  color: #6c5ce7;
+  background: color-mix(in srgb, var(--accent-soft) 90%, white);
+  color: var(--accent);
 }
 
 /* Фазы цикла */
 .phase-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 16px;
   margin: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .phase-header {
@@ -757,7 +842,7 @@ button,
 .phase-title {
   font-size: 18px;
   font-weight: 600;
-  color: #222;
+  color: var(--text-main);
 }
 
 .phase-badge {
@@ -765,8 +850,8 @@ button,
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: #f3f3f3;
-  color: #666;
+  background: var(--chip-bg);
+  color: var(--text-secondary);
 }
 
 .phase-main {
@@ -779,7 +864,7 @@ button,
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: #fafafa;
+  background: var(--card-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -799,18 +884,18 @@ button,
 
 .phase-text {
   font-size: 14px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.4;
   white-space: pre-line;
 }
 
 .phase-tip {
   margin-top: 14px;
-  background: #fafafa;
+  background: var(--card-soft);
   border-radius: 14px;
   padding: 12px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
@@ -823,7 +908,7 @@ button,
 }
 
 .phase-ovulation {
-  color: #6c5ce7;
+  color: var(--accent);
 }
 
 .phase-luteal {
@@ -841,45 +926,39 @@ button,
 }
 
 .badge-ovulation {
-  background: #ece8ff;
-  color: #6c5ce7;
+  background: color-mix(in srgb, var(--accent-soft) 90%, white);
+  color: var(--accent);
 }
 
 .badge-luteal {
   background: #fff1dd;
   color: #c9892f;
 }
-/* Стиль переключатель Главная */
+
+/* HOME SCREEN */
+.screen {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.screen.hidden {
+  display: none !important;
+}
 
 .top-switch button {
   flex: 1;
   border: none;
   padding: 10px;
   border-radius: 12px;
-  background: #f2f2f2;
+  background: transparent;
   font-size: 14px;
 }
 
 .top-switch button.active {
-  background: black;
-  color: white;
-}
-/* HOME SCREEN */
-.screen {
-  display: block;
-}
-
-.hidden {
-  display: none !important;
-}
-
-.top-switch {
-  display: flex;
-  width: 220px;
-  margin: 10px auto 14px;
-  background: #f3f3f3;
-  border-radius: 14px;
-  padding: 3px;
+  background: var(--card-bg);
+  color: var(--text-main);
 }
 
 .top-tab {
@@ -890,104 +969,60 @@ button,
   padding: 9px 0;
   font-size: 13px;
   font-weight: 600;
-  color: #7b7b7b;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .top-tab.active {
-  background: white;
-  color: #1f1f1f;
+  background: var(--card-bg);
+  color: var(--text-main);
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 #home-screen {
-  padding: 0 10px 20px;
+  padding: 4px 12px 24px;
 }
 
 .home-date {
   text-align: center;
   font-size: 13px;
-  color: #9a9a9a;
+  color: var(--text-light);
   margin-bottom: 10px;
 }
 
 .home-main-card {
   background: radial-gradient(
     120% 120% at 50% 0%,
-    #f3eaff 0%,
-    #efe7ff 40%,
-    #f7f4ff 100%
+    var(--accent-soft) 0%,
+    var(--card-soft) 40%,
+    var(--card-bg) 100%
   );
-
   border-radius: 28px;
   padding: 28px 20px;
   text-align: center;
   margin-bottom: 18px;
-
-  box-shadow:
-    0 10px 30px rgba(120, 100, 255, 0.08);
-
-  border: 1px solid rgba(120, 100, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(120, 100, 255, 0.08);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 50%, var(--border));
 }
 
 .home-phase {
   font-size: 13px;
   font-weight: 600;
-  color: #7b6cff;
+  color: var(--accent);
   margin-bottom: 8px;
 }
 
 .home-main {
   font-size: 34px;
   font-weight: 800;
-  color: #111;
+  color: var(--text-main);
   margin-bottom: 6px;
 }
 
 .home-sub {
   font-size: 13px;
-  color: #7a7a7a;
-}
-/* Mini cards */
-.home-mini-card {
-  background: #ffffff;
-  border-radius: 22px;
-  padding: 18px;
-
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.04);
-
-  border: 1px solid #f2f2f2;
-}
-
-.home-mini-card:active {
-  transform: scale(0.97);
-}
-
-.mini-title {
-  font-size: 12px;
-  color: #9a9a9a;
-  margin-bottom: 8px;
-}
-
-.mini-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #d89b2b; /* мягкий акцент */
-}
-
-.mini-text {
-  font-size: 12px;
-  color: #777;
-}
-
-.home-tip-card {
-  background: #f9f9f9;
-  border-radius: 22px;
-  padding: 18px;
-
-  border: 1px solid #f0f0f0;
+  color: var(--text-secondary);
 }
 
 .home-grid {
@@ -998,53 +1033,55 @@ button,
 }
 
 .home-mini-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 18px;
   padding: 14px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   min-height: 120px;
+}
+
+.home-mini-card:active {
+  transform: scale(0.97);
 }
 
 .mini-title {
   font-size: 13px;
   font-weight: 600;
-  color: #8a8a8a;
+  color: var(--text-light);
   margin-bottom: 10px;
 }
 
 .mini-value {
   font-size: 18px;
   font-weight: 700;
-  color: #202020;
+  color: var(--text-main);
   margin-bottom: 6px;
 }
 
 .mini-text {
   font-size: 13px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.4;
   white-space: pre-line;
 }
 
 .home-tip-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 18px;
   padding: 14px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   margin-bottom: 12px;
 }
 
 .home-tip-text {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.5;
   white-space: pre-line;
 }
 
-#home-screen {
-  padding: 4px 12px 24px;
-}
-/* Анимация появления */
 .home-main-card,
 .home-mini-card,
 .home-tip-card {
@@ -1061,16 +1098,6 @@ button,
     transform: translateY(0);
   }
 }
-/* Анимаци между Home screen и Calendar */
-.screen {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.28s ease, transform 0.28s ease;
-}
-
-.screen.hidden {
-  display: none !important;
-}
 
 .screen.anim-enter {
   opacity: 0;
@@ -1081,14 +1108,14 @@ button,
   opacity: 1;
   transform: translateY(0);
 }
-/* Стиль для активного месяца */
+
 .year-month.current-month {
-  border: 1px solid #ece8ff;
+  border: 1px solid var(--accent-soft);
   box-shadow: 0 2px 8px rgba(108, 92, 231, 0.08);
 }
 
 .year-month.current-month .year-month-title {
-  color: #6c5ce7;
+  color: var(--accent-strong);
 }
 
 .year-month.clickable {
@@ -1099,6 +1126,7 @@ button,
 .year-month.clickable:active {
   transform: scale(0.98);
 }
+
 /* Анимация Месяц/год */
 .view-anim {
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -1113,6 +1141,7 @@ button,
   opacity: 1;
   transform: translateY(0);
 }
+
 /* CYCLE CIRCLE */
 .cycle-ring-wrap {
   position: relative;
@@ -1129,19 +1158,19 @@ button,
 
 .cycle-ring-bg {
   fill: none;
-  stroke: rgba(123, 108, 255, 0.12);
+  stroke: color-mix(in srgb, var(--accent) 14%, white);
   stroke-width: 10;
 }
 
 .cycle-ring-progress {
   fill: none;
-  stroke: #7b6cff;
+  stroke: var(--accent);
   stroke-width: 10;
   stroke-linecap: round;
   stroke-dasharray: 301.59;
   stroke-dashoffset: 301.59;
   transition: stroke-dashoffset 0.5s ease;
-  filter: drop-shadow(0 2px 8px rgba(123, 108, 255, 0.18));
+  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--accent) 25%, transparent));
 }
 
 .cycle-ring-center {
@@ -1156,45 +1185,48 @@ button,
 .cycle-ring-day {
   font-size: 34px;
   font-weight: 800;
-  color: #111;
+  color: var(--text-main);
   line-height: 1;
 }
 
 .cycle-ring-label {
   font-size: 12px;
-  color: #8c8c8c;
+  color: var(--text-light);
   margin-top: 4px;
   text-transform: lowercase;
 }
-/* Terms*/
+
+/* Terms */
 .legal-wrap {
   padding: 8px 14px 24px;
 }
 
 .legal-hero {
-  background: linear-gradient(180deg, #fff6fb 0%, #f7f4ff 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 55%, white) 0%, var(--card-bg) 100%);
   border-radius: 26px;
   padding: 22px 18px;
   margin-bottom: 14px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .legal-label {
   font-size: 13px;
   font-weight: 600;
-  color: #7b6cff;
+  color: var(--accent);
   margin-bottom: 8px;
 }
+
 .legal-title {
   font-size: 28px;
   font-weight: 800;
-  color: #111;
+  color: var(--text-main);
   margin-bottom: 8px;
 }
 
 .legal-subtitle {
   font-size: 14px;
-  color: #6f6f6f;
+  color: var(--text-secondary);
   line-height: 1.45;
 }
 
@@ -1207,22 +1239,24 @@ button,
 .legal-nav-btn {
   width: 100%;
   border: none;
-  background: white;
+  background: var(--card-bg);
   border-radius: 18px;
   padding: 16px;
   text-align: left;
   font-size: 15px;
   font-weight: 600;
-  color: #222;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  color: var(--text-main);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   cursor: pointer;
 }
 
 .legal-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 22px;
   padding: 18px 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   min-height: 220px;
   margin-bottom: 14px;
 }
@@ -1230,27 +1264,27 @@ button,
 .legal-page-title {
   font-size: 20px;
   font-weight: 700;
-  color: #111;
+  color: var(--text-main);
   margin-bottom: 12px;
 }
 
 .legal-text {
   font-size: 15px;
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.6;
   white-space: pre-line;
 }
 
 .legal-empty {
   font-size: 15px;
-  color: #8a8a8a;
+  color: var(--text-light);
 }
 
 .legal-back-btn {
   width: 100%;
   border: none;
   border-radius: 18px;
-  background: #111;
+  background: var(--accent-strong);
   color: white;
   font-size: 15px;
   font-weight: 600;
@@ -1262,7 +1296,7 @@ button,
   width: 100%;
   border: none;
   background: transparent;
-  color: #7b6cff;
+  color: var(--accent);
   font-size: 14px;
   font-weight: 600;
   padding: 10px 0 4px;
@@ -1277,6 +1311,11 @@ button,
 <div class="top-switch">
   <button id="btn-home" class="top-tab active" onclick="showScreen('home')">Сегодня</button>
   <button id="btn-calendar" class="top-tab" onclick="showScreen('calendar')">Календарь</button>
+</div>
+
+<div class="theme-switch">
+  <button id="theme-soft-btn" class="theme-btn active" onclick="setTheme('soft')">Soft</button>
+  <button id="theme-beige-btn" class="theme-btn" onclick="setTheme('beige')">Beige</button>
 </div>
 
 <!-- ================= HOME SCREEN ================= -->
@@ -1731,6 +1770,7 @@ document.addEventListener("selectionchange", () => {
       tg.disableVerticalSwipes();
     }
   }
+    let appTheme = "soft";
 
     let touchStartTime = 0;
     let isDayPressing = false;
@@ -1749,6 +1789,35 @@ document.addEventListener("selectionchange", () => {
     let periodLength = 5;
     let lastStart = new Date("2026-03-13");
     let cyclesHistory = [];
+
+// ==== Функция смены стилей  ====
+function setTheme(theme) {
+  appTheme = theme;
+
+  if (theme === "beige") {
+    document.documentElement.setAttribute("data-theme", "beige");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+
+  const softBtn = document.getElementById("theme-soft-btn");
+  const beigeBtn = document.getElementById("theme-beige-btn");
+
+  if (softBtn) softBtn.classList.toggle("active", theme === "soft");
+  if (beigeBtn) beigeBtn.classList.toggle("active", theme === "beige");
+
+  localStorage.setItem("cycleAppTheme", theme);
+}
+
+function loadTheme() {
+  const savedTheme = localStorage.getItem("cycleAppTheme");
+  if (savedTheme === "beige" || savedTheme === "soft") {
+    appTheme = savedTheme;
+  } else {
+    appTheme = "soft";
+  }
+  setTheme(appTheme);
+}    
 // ==== Функция подтверждения цикла ====
 function confirmCycleStart() {
   if (!modalDate) return;
@@ -2849,7 +2918,7 @@ function renderPhaseCard(date = new Date()) {
     const today = new Date();
     current = new Date(today.getFullYear(), today.getMonth(), 1);
 
-
+    loadTheme();
     applyStaticTranslations();
 
     const nowDate = new Date();
