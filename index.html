@@ -1850,6 +1850,13 @@ function showScreen(screen) {
     }
 
     function formatISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDisplayDate(date) {
       if (appLanguage === "en") {
         return date.toLocaleDateString("en-US", {
           year: "numeric",
@@ -1860,6 +1867,7 @@ function showScreen(screen) {
 
       return date.toLocaleDateString("ru-RU");
     }
+
     function setSaveStatus(text) {
       const statusEl = document.getElementById("save-status");
       if (statusEl) statusEl.innerText = text;
@@ -2165,14 +2173,13 @@ function setViewMode(mode) {
     ? tr("cycle_in_days", { days: diffToNext })
     : tr("today_word");
 
-  nextCycleTextEl.innerText = tr("next_cycle_date", { date: formatISO(nextCycle) });
-
+  nextCycleTextEl.innerText = tr("next_cycle_date", { date: formatDisplayDate(nextCycle) });
   tipEl.innerText = phase.tip;
 }
 
 
   function render() {
-  const grid = document.getElementById("grid");
+  const grid = document.getElementById("grid"); 
   const month = document.getElementById("month");
 
   if (!grid || !month) return;
