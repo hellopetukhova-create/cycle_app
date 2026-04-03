@@ -1303,6 +1303,15 @@ body {
   cursor: pointer;
 }
 
+.first-tip {
+  margin: 8px 12px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  color: var(--text-main);
+  border-radius: 12px;
+  font-size: 13px;
+  text-align: center;
+}
 </style>
 </head>
 
@@ -1388,6 +1397,7 @@ body {
     <div class="segment-bg" id="segment-bg"></div>
   </div>
 
+  <div id="first-tip" class="first-tip hidden"></div>
     <!-- Календарь -->
     <div class="calendar">
       <div class="weekdays">
@@ -1636,6 +1646,7 @@ const I18N = {
 
     Используя приложение, пользователь соглашается с тем, что сервис
     предоставляется в информационных целях.`,
+    first_tip: "👉 Нажми на любой день, чтобы отметить цикл",
   },
   en: {
     home_tab: "Today",
@@ -1718,6 +1729,7 @@ const I18N = {
 
     By using the app, the user agrees that the service
     is provided for informational purposes only.`,
+    first_tip: "👉 Tap any day to track your cycle",
   }
 };    
 // ==== Отслеживание скролла ====
@@ -1818,6 +1830,23 @@ function loadTheme() {
   }
   setTheme(appTheme);
 }    
+
+function showFirstTip() {
+  const tip = document.getElementById("first-tip");
+  if (!tip) return;
+
+  const seen = localStorage.getItem("seen_tip");
+
+  if (!seen) {
+    tip.innerText = tr("first_tip");
+    tip.classList.remove("hidden");
+
+    setTimeout(() => {
+      tip.classList.add("hidden");
+      localStorage.setItem("seen_tip", "1");
+    }, 5000);
+  }
+}
 // ==== Функция подтверждения цикла ====
 function confirmCycleStart() {
   if (!modalDate) return;
@@ -2926,6 +2955,7 @@ function renderPhaseCard(date = new Date()) {
     render();
     renderStats();
     launchFlowerRain();
+    showFirstTip();
     renderFertilityCard(nowDate);
     renderPhaseCard(nowDate);
     renderHomeScreen(nowDate);
